@@ -1,12 +1,19 @@
 #pragma once
 #include "node.hpp"
+#include "tree.hpp"
 #include <iterator>
 
 namespace Container
 {
+
+template<typename KeyT, class Cmp>
+class SearchTree;
+
+template<typename KeyT, class Cmp>
+class SplayTree;
+
 namespace detail
 {
-
 template<typename KeyT, class Cmp>
 class SearchTreeIterator
 {
@@ -16,14 +23,13 @@ public:
     using value_type        = KeyT;
     using const_pointer     = KeyT*;
     using const_reference   = KeyT&;
-    using node_ptr          = Node*;
-    using const_node_ptr    = const Node*;
+    using node_ptr          = Node<KeyT>*;
+    using const_node_ptr    = const Node<KeyT>*;
 private:
-    node_ptr node_;
-    const_node_ptr max_;
+    node_ptr node_, max_;
 
 public:
-    SearchTreeIterator(node_ptr node = nullptr, const_node_ptr max = nullptr)
+    SearchTreeIterator(node_ptr node = nullptr, node_ptr max = nullptr)
     :node_ {node}, max_ {max}
     {}
 
@@ -83,13 +89,14 @@ public:
         return cpy;
     }
 
-    bool operator==(const SearchTreeIterator& rhs) const {return node_ == rhs.node_;}
+    bool operator==(const SearchTreeIterator& rhs) const {return (node_ == rhs.node_ && max_ == rhs.max_);}
 
 protected:
     node_ptr base() const {return node_;}
     
 public:
-    friend class ISearchTree<KeyT, Cmp>;
+    friend class SearchTree<KeyT, Cmp>;
+    friend class SplayTree<KeyT, Cmp>;
 }; // class SearchTreeIterator
 } // namespace detail
 } // namespace Container

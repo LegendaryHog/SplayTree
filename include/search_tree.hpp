@@ -1,27 +1,30 @@
 #pragma once
 #include <algorithm>
-#include "node.hpp"
+#include <fstream>
+#include "tree.hpp"
 #include "search_tree_iterator.hpp"
 
 namespace Container
 {
 
-template<typename KeyT, class Cmp>  
-class ISearchTree : public Tree
+template<typename KeyT, class Cmp = std::less<KeyT>> 
+class SearchTree : public Tree<KeyT>
 {
+    using base = Tree<KeyT>;
 public:
-    using node_type      = typename detail::Node<KeyT>;
-    using node_ptr       = node_type*;
-    using const_node_ptr = const node_type*;
-    using key_type       = KeyT;
-    using size_type      = typename std::size_t;
-    using ConstIterator = SearchTreeIterator<key_type, Cmp, node_type>;
+    using typename base::node_type;
+    using typename base::node_ptr;
+    using typename base::const_node_ptr;
+    using typename base::key_type;
+    using typename base::size_type;
+    
+    using ConstIterator = detail::SearchTreeIterator<key_type, Cmp>;
     using Iterator      = ConstIterator;
 
 protected:
-    node_ptr  root_ = nullptr;
-    size_type size_ = 0;
-    node_ptr  min_  = nullptr, max_  = nullptr; 
+    using base::root_;
+    using base::size_;
+    node_ptr min_  = nullptr, max_  = nullptr; 
 
     Cmp cmp {};
 
@@ -32,18 +35,23 @@ protected:
     }
 
 //----------------------------------------=| Ctors start |=---------------------------------------------
-    ISearchTree() = default;
+public:
+    SearchTree() = default;
 
     template<std::input_iterator InpIt>
-    ISearchTree(InpIt first, InpIt last)
+    SearchTree(InpIt first, InpIt last)
     {   
-        ISearchTree tmp {};
-        tmp.insert(first, last);
-        swap(tmp);
+        SearchTree tmp {};
+        while (first != last)
+        {
+            auto cpy = *first++;
+            tmp.insert_impl(std::move(cpy));
+        }
+        std::swap(*this, tmp);
     }
 
-    ISearchTree(std::initializer_list<key_type> initlist)
-    :ISearchTree(initlist.begin(), initlist.end())
+    SearchTree(std::initializer_list<key_type> initlist)
+    :SearchTree(initlist.begin(), initlist.end())
     {}
 //----------------------------------------=| Ctors end |=-----------------------------------------------
 
@@ -59,94 +67,13 @@ protected:
 //----------------------------------------=| Max/min methods end |=-------------------------------------
 
 //----------------------------------------=| Big five start |=------------------------------------------
-private:
-    void swap(ISearchTree& rhs) noexcept
-    {
-        std::swap(root_, rhs.root_);
-        std::swap(size_, rhs.size_);
-    }
-
-public:
-    ISearchTree(ISearchTree&& other)
-    {
-        swap(other);
-    }
-    ISearchTree& operator=(ISearchTree&& rhs)
-    {
-        swap(rhs);
-        return *this;
-    }
-
-    ISearchTree(const ISearchTree& other): size_ {other.size_}
-    {
-        if (empty())
-            return;
-
-        ISearchTree tmp {std::move(*this)};
-
-        tmp.root_ = new node_type{other.root_->key_};
-        auto tmp_current   = tmp.root_;
-        auto other_current = other.root_;
-
-        while (other_current != nullptr)
-            if (other_current->left_ != nullptr && tmp_current->left_ == nullptr)
-            {
-                tmp_current->left_ = new node_type{other_current->left_->key_, tmp_current};
-                other_current = other_current->left_;
-                tmp_current   = tmp_current->left_;
-            }
-            else if (other_current->right_ != nullptr && tmp_current->right_ == nullptr)
-            {
-                tmp_current->right_ = new node_type{other_current->right_->key_, tmp_current};
-                other_current = other_current->right_;
-                tmp_current   = tmp_current->right_;
-            }
-            else
-            {
-                other_current = other_current->parent_;
-                tmp_current   = tmp_current->parent_;
-            }
-
-        swap(tmp);
-        
-        min_  = detail::find_min(root_);
-        max_  = detail::find_max(root_);
-    }
-
-    ISearchTree& operator=(const ISearchTree& rhs)
-    {
-        auto rhs_cpy {rhs};
-        swap(rhs_cpy);
-        return *this;
-    }
-
-    virtual ~ISearchTree() 
-    {
-        if (empty())
-            return;
-
-        auto current = root_;
-        while (current != nullptr)
-            if (current->left_ != nullptr)
-                current = current->left_;
-            else if (current->right_ != nullptr)
-                current = current->right_;
-            else
-            {
-                auto parent = current->parent_;
-
-                if (current == root_)
-                    break;
-                else if (current->is_left_son())
-                    parent->left_ = nullptr;
-                else
-                    parent->right_ = nullptr;
-
-                delete current;
-                current = parent;
-            }
-        delete root_;
-    }
+    SearchTree(SearchTree&&) = default;
+    SearchTree(const SearchTree& other)
+    :base::Tree(other), min_ {detail::find_min(root_)}, max_ {detail::find_max(root_)}
+    {}
+    SearchTree& operator=(const SearchTree&) = default;
+    SearchTree& operator=(SearchTree&&) = default;
+    virtual ~SearchTree() = default;
 //----------------------------------------=| Big five end |=--------------------------------------------
 
 //----------------------------------------=| begin/end start |=-----------------------------------------
@@ -159,7 +86,7 @@ public:
 //----------------------------------------=| begin/end end |=-------------------------------------------
 
 //----------------------------------------=| Find start |=----------------------------------------------
-private:
+protected:
     ConstIterator find_key(const key_type& key)
     {
         node_ptr node = root_;
@@ -183,8 +110,8 @@ public:
 private:
     node_ptr find_parent(const key_type& key) const noexcept
     {
-        auto x = root_;
-        auto y = nullptr;
+        node_ptr x = root_;
+        node_ptr y = nullptr;
 
         while (x != nullptr)
         {
@@ -201,18 +128,24 @@ private:
         }
         return y;
     }
-
-    node_ptr insert_key(key_type&& key)
+protected:
+    std::pair<ConstIterator, bool> insert_key(key_type&& key)
     {
         auto parent = find_parent(key);
 
         // if key is alredy in tree
         if (parent != nullptr && key_equal(parent->key_, key))
-            return std::pair{ConstIterator{parent, nullptr}, false};
+            return std::pair{ConstIterator{parent, max_}, false};
 
         node_ptr new_node = new node_type{std::move(key), parent};
         insert_in_place(new_node);
-        return new_node;
+        return std::pair{ConstIterator{new_node, max_}, true};
+    }
+
+private:
+    std::pair<ConstIterator, bool> insert_impl(key_type&& key)
+    {
+        return insert_key(std::move(key));
     }
 
     void insert_in_place(node_ptr node) noexcept
@@ -238,16 +171,16 @@ private:
         insert_fix_min_max(node);
     }
 
-protected:
+public:
     std::pair<ConstIterator, bool> insert(const key_type& key)
     {
         key_type key_cpy {key};
         return insert(std::move(key_cpy));
     }
 
-    std::pair<ConstIterator, bool> insert(key_type&& key) noexcept
+    virtual std::pair<ConstIterator, bool> insert(key_type&& key) noexcept
     {
-        return std::pair{ConstIterator{insert_key(std::move(key)), nullptr}, true};
+        return insert_impl(std::move(key));
     }
 
     template<std::input_iterator InpIt>
@@ -282,10 +215,10 @@ private:
             u->parent_->left_ = v;
         else
             u->parent_->right_ = v;
-        if ( v != nullptr)
+        if (v != nullptr)
             v->parent_ = u->parent_;
     }
-
+protected:
     // delete z from tree with saving all invariants
     void erase_from_tree(node_ptr z)
     {
@@ -293,8 +226,7 @@ private:
         size_--;
         // declare two pointer, y - replacment for z in else case
         // x - root of subtree, where we need fix invarinats 
-        node_ptr y = z, x = nullptr;
-        auto y_original_color = y->color_;
+        node_ptr y = root_, x = nullptr;
         // if z has only right subtree
         /*\_____________________________
         |*     |                  |     |
@@ -381,13 +313,13 @@ private:
     void delete_fix_min_max(node_ptr node)
     {
         if (node == min_)
-            min_ = detail::find_min(root_, nullptr);
+            min_ = detail::find_min(root_);
         if (node == max_)
-            max_ = detail::find_max(root_, nullptr);
+            max_ = detail::find_max(root_);
     }
 
-protected:
-    ConstIterator erase(ConstIterator itr)
+public:
+    virtual ConstIterator erase(ConstIterator itr)
     {
         if (itr == end())
             return end();
@@ -442,7 +374,7 @@ private:
         return result;
     }
 
-protected:
+public:
     ConstIterator lower_bound(const key_type& key) const {return ConstIterator{lower_bound_ptr(key), nullptr};}
     ConstIterator upper_bound(const key_type& key) const {return ConstIterator{upper_bound_ptr(key), nullptr};}
 //----------------------------------------=| Bounds end |=----------------------------------------------
@@ -503,8 +435,8 @@ private:
 //----------------------------------------=| Graph dump end |=------------------------------------------
 
 //----------------------------------------=| equal_to start |=------------------------------------------
-protected:
-    bool equal_to(const ISearchTree& other) const
+public:
+    bool equal_to(const SearchTree& other) const
     {
         if (size() != other.size())
             return false;
@@ -517,4 +449,9 @@ protected:
 //----------------------------------------=| equal_to end |=--------------------------------------------
 }; // class ISearchTree
 
+template<typename KeyT, class Cmp = std::less<KeyT>>
+bool operator==(const SearchTree<KeyT, Cmp>& lhs, const SearchTree<KeyT, Cmp>& rhs)
+{
+    return lhs.equal_to(rhs);
+}
 } // namespace Container

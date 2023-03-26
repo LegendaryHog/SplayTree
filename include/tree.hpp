@@ -3,8 +3,8 @@
 
 namespace Container
 {
-template<typename T>
-class ITree
+template<typename KeyT>
+class Tree
 {
 public:
     using node_type      = typename detail::Node<KeyT>;
@@ -18,36 +18,36 @@ protected:
     size_type size_ = 0;
 
 public:
-    ITree() = default;
+    Tree() = default;
 
     size_type size() const {return size_;}
 
     bool empty() const {return (size_ == 0);}
 
 private:
-    void swap(ITree& rhs) noexcept
+    void swap(Tree& rhs) noexcept
     {
         std::swap(root_, rhs.root_);
         std::swap(size_, rhs.size_);
     }
 
 public:
-    ITree(ITree&& other)
+    Tree(Tree&& other)
     {
         swap(other);
     }
-    ITree& operator=(ITree&& rhs)
+    Tree& operator=(Tree&& rhs)
     {
         swap(rhs);
         return *this;
     }
 
-    ITree(const ITree& other): size_ {other.size_}
+    Tree(const Tree& other): size_ {other.size_}
     {
         if (empty())
             return;
 
-        ITree tmp {std::move(*this)};
+        Tree tmp {std::move(*this)};
 
         tmp.root_ = new node_type{other.root_->key_};
         auto tmp_current   = tmp.root_;
@@ -74,14 +74,14 @@ public:
         swap(tmp);
     }
 
-    ITree& operator=(const ITree& rhs)
+    Tree& operator=(const Tree& rhs)
     {
         auto rhs_cpy {rhs};
         swap(rhs_cpy);
         return *this;
     }
 
-    virtual ~ITree()
+    virtual ~Tree()
     {
         if (empty())
             return;

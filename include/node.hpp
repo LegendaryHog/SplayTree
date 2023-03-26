@@ -25,7 +25,9 @@ struct Node
     }
 };
 
-Node* find_min(Node* root) noexcept
+// for sorted search tree
+template<typename KeyT>
+Node<KeyT>* find_min(Node<KeyT>* root) noexcept
 {
     auto node = root;
     for (node = root; node->left_ != nullptr; node = node->left_) {}
@@ -33,7 +35,8 @@ Node* find_min(Node* root) noexcept
 }
 
 // for sorted search tree
-Node* find_max(Node* root) noexcept
+template<typename KeyT>
+Node<KeyT>* find_max(Node<KeyT>* root) noexcept
 {
     auto node = root;
     for (node = root; node->right_ != nullptr; node = node->right_) {}
