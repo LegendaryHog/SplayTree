@@ -7,10 +7,10 @@
 namespace Container
 {
 
-template<typename KeyT, class Cmp = std::less<KeyT>> 
-class SearchTree : public Tree<KeyT>
+template<typename KeyT, class Cmp = std::less<KeyT>, derived_from_node SearchNode = detail::Node<KeyT>> 
+class SearchTree : public Tree<KeyT, SearchNode>
 {
-    using base = Tree<KeyT>;
+    using base = Tree<KeyT, SearchNode>;
 public:
     using typename base::node_type;
     using typename base::node_ptr;
@@ -226,7 +226,7 @@ protected:
         size_--;
         // declare two pointer, y - replacment for z in else case
         // x - root of subtree, where we need fix invarinats 
-        node_ptr y = root_, x = nullptr;
+        node_ptr y = nullptr, x = nullptr;
         // if z has only right subtree
         /*\_____________________________
         |*     |                  |     |
@@ -387,20 +387,20 @@ public:
 
         file << "digraph G {" << std::endl;
         file << "\trankdir=\"TB\"" << std::endl;
-        file << "\tnode[shape=record, penwidth=3.0, style=filled, color=black, fontcolor=white];" << std::endl;
+        file << "\tnode[shape=record, penwidth=3.0, style=filled, color=black, fontcolor=black];" << std::endl;
         descriptor_dump(file);
         tree_dump(file);
         file << "}" << std::endl;
         file.close();
 
-        std::system(("dot -T png " + filename + ".dot -o " + filename + ".png").c_str());
+        std::system(("dot -T svg " + filename + ".dot -o " + filename + ".svg").c_str());
         std::system(("rm " + filename + ".dot").c_str());
     }
 
 private:
     void descriptor_dump(std::fstream& file) const
     {
-        file << "\tTree [fillcolor=purple, label = \"{ ISearchTree\\ndescriptor| size: " << size() << "| <root> root:\\n " << root_
+        file << "\tTree [fillcolor=purple, label = \"{ SearchTree\\ndescriptor| size: " << size() << "| <root> root:\\n " << root_
         << "| min key: " << minimum() << "| max key: " << maximum() << "}\"];" << std::endl;
     }
     

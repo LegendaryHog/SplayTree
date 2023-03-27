@@ -1,5 +1,7 @@
 #pragma once
 #include <iostream>
+#include <concepts>
+#include <type_traits>
 
 namespace Container
 {
@@ -13,17 +15,25 @@ struct Node
 
     key_type key_ {};
     node_ptr parent_ = nullptr, left_ = nullptr, right_ = nullptr;
+    
+    virtual node_ptr clone() const
+    {
+        return new Node{key_}
+    }
 
     bool is_left_son()  const noexcept {return this == parent_->left_;}
     bool is_right_son() const noexcept {return this == parent_->right_;}
     
     void dump(std::fstream& file) const
     {
-        file << "Node_" << this << "[fillcolor=red";    
+        file << "Node_" << this << "[fillcolor=lightgreen";    
         file << ", label = \"{<_node_>ptr:\\n " << this << "| parent:\\n " << parent_ << "| key: " << key_
         << "| {<left>left:\\n " << left_ << "| <right>right:\\n " << right_ << "}}\"];" << std::endl;
     }
 };
+
+template<typename Derived>
+concept derived_from_node = std::base_of<Node, Derived>::value;
 
 // for sorted search tree
 template<typename KeyT>

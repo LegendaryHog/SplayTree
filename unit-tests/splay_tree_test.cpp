@@ -39,6 +39,14 @@ TEST(SplayTree, insert_n_iterators)
     int i = 0;
     for (auto x: tree)
         EXPECT_EQ(x, vec[i++]);
+
+    std::vector<int> vec1 {89, 33, -1, 4, 56, 8, 71, 44, -15, 35, 80, 37, 42, 14, -5, 87, 78, -78};
+    SplayTree<int> tree1 (vec1.cbegin(), vec1.cend());
+
+    SplayTree<int> tree2 {};
+    for (int i = 0; i < 40; i++)
+        tree2.insert(i);
+    tree2.debug_graph_dump("dump_ins");
 }
 
 TEST(SplayTree, ctors_n_iterators_n_equlity)
@@ -188,3 +196,77 @@ TEST(SplayTree, erase)
 
     EXPECT_EQ(*set2.erase(citr1, citr2), 12);
 }
+
+TEST(BoostSet, number_less_than)
+{
+    BoostSet<int> set = {0, 1, 2, 3, 7, 9, 11, 15, 20, 21, 56, 70};
+    EXPECT_EQ(set.number_less_than(0), 0);
+    EXPECT_EQ(set.number_less_than(-1), 0);
+    EXPECT_EQ(set.number_less_than(1), 1);
+    EXPECT_EQ(set.number_less_than(2), 2);
+    EXPECT_EQ(set.number_less_than(3), 3);
+    EXPECT_EQ(set.number_less_than(4), 4);
+    EXPECT_EQ(set.number_less_than(5), 4);
+    EXPECT_EQ(set.number_less_than(6), 4);
+    EXPECT_EQ(set.number_less_than(7), 4);
+    EXPECT_EQ(set.number_less_than(8), 5);
+    EXPECT_EQ(set.number_less_than(9), 5);
+    EXPECT_EQ(set.number_less_than(10), 6);
+    EXPECT_EQ(set.number_less_than(11), 6);
+    EXPECT_EQ(set.number_less_than(12), 7);
+    EXPECT_EQ(set.number_less_than(13), 7);
+    EXPECT_EQ(set.number_less_than(14), 7);
+    EXPECT_EQ(set.number_less_than(15), 7);
+    EXPECT_EQ(set.number_less_than(16), 8);
+    EXPECT_EQ(set.number_less_than(19), 8);
+    EXPECT_EQ(set.number_less_than(20), 8);
+    EXPECT_EQ(set.number_less_than(21), 9);
+    EXPECT_EQ(set.number_less_than(22), 10);
+    EXPECT_EQ(set.number_less_than(56), 10);
+    EXPECT_EQ(set.number_less_than(57), 11);
+    EXPECT_EQ(set.number_less_than(69), 11);
+    EXPECT_EQ(set.number_less_than(70), 11);
+    EXPECT_EQ(set.number_less_than(71), 12);
+    EXPECT_EQ(set.number_less_than(100), 12);
+    EXPECT_EQ(set.number_less_than(150), 12);
+    EXPECT_EQ(set.number_less_than(420), 12);
+}
+
+TEST(BoostSet, number_not_greater_than)
+{
+    SplayTree<int> set = {0, 1, 2, 3, 7, 9, 11, 15, 20, 21, 56, 70};
+    EXPECT_EQ(set.number_not_greater_than(0), 1);
+    EXPECT_EQ(set.number_not_greater_than(-1), 0);
+    EXPECT_EQ(set.number_not_greater_than(1), 2);
+    EXPECT_EQ(set.number_not_greater_than(2), 3);
+    EXPECT_EQ(set.number_not_greater_than(3), 4);
+    EXPECT_EQ(set.number_not_greater_than(4), 4);
+    EXPECT_EQ(set.number_not_greater_than(5), 4);
+    EXPECT_EQ(set.number_not_greater_than(6), 4);
+    EXPECT_EQ(set.number_not_greater_than(7), 5);
+    EXPECT_EQ(set.number_not_greater_than(8), 5);
+    EXPECT_EQ(set.number_not_greater_than(9), 5);
+    EXPECT_EQ(set.number_not_greater_than(10), 6);
+    EXPECT_EQ(set.number_not_greater_than(11), 7);
+    EXPECT_EQ(set.number_not_greater_than(12), 7);
+    EXPECT_EQ(set.number_not_greater_than(13), 7);
+    EXPECT_EQ(set.number_not_greater_than(14), 7);
+    EXPECT_EQ(set.number_not_greater_than(15), 8);
+    EXPECT_EQ(set.number_not_greater_than(16), 8);
+    EXPECT_EQ(set.number_not_greater_than(19), 8);
+    EXPECT_EQ(set.number_not_greater_than(20), 9);
+    EXPECT_EQ(set.number_not_greater_than(21), 10);
+    EXPECT_EQ(set.number_not_greater_than(22), 10);
+    EXPECT_EQ(set.number_not_greater_than(56), 11);
+    EXPECT_EQ(set.number_not_greater_than(57), 11);
+    EXPECT_EQ(set.number_not_greater_than(69), 11);
+    EXPECT_EQ(set.number_not_greater_than(70), 12);
+    EXPECT_EQ(set.number_not_greater_than(71), 12);
+    EXPECT_EQ(set.number_not_greater_than(100), 12);
+    EXPECT_EQ(set.number_not_greater_than(150), 12);
+    EXPECT_EQ(set.number_not_greater_than(420), 12);
+}
+
+
+
+

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+splayrun="$1"/task/task_run
+boostrun="$2"/task_run
+
+for i in $(seq 3 1 $#)
+do
+    ./${splayrun} < $3 > "splay_out"
+    ./${boostrun} < $3 > "boost_out" 
+    res=(diff -q boost_out splay_out)
+    if (res==1)
+    then
+        echo "$3: Success"
+    else
+        echo "$3: Error"
+        diff boost_out splay_out
+    fi
+    rm splay_out boost_out
+done

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+boostrun="$2"/task_run
+splayrun="$1"/task/task_run
+
+for i in $(seq 3 1 $#)
+do
+    echo "$3:"
+    echo "splay time:"
+    time ./${splayrun} < $3 > "splay_out"
+    echo ''
+    echo "boost time:"
+    time ./${boostrun} < $3 > "boost_out" 
+    rm splay_out boost_out
+done

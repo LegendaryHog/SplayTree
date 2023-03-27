@@ -3,11 +3,12 @@
 
 namespace Container
 {
-template<typename KeyT>
+
+template<typename KeyT, derived_from_node Node>
 class Tree
 {
 public:
-    using node_type      = typename detail::Node<KeyT>;
+    using node_type      = Node;
     using node_ptr       = node_type*;
     using const_node_ptr = const node_type*;
     using key_type       = KeyT;
@@ -49,20 +50,22 @@ public:
 
         Tree tmp {std::move(*this)};
 
-        tmp.root_ = new node_type{other.root_->key_};
+        tmp.root_ = other.root_->clone();
         auto tmp_current   = tmp.root_;
         auto other_current = other.root_;
 
         while (other_current != nullptr)
             if (other_current->left_ != nullptr && tmp_current->left_ == nullptr)
             {
-                tmp_current->left_ = new node_type{other_current->left_->key_, tmp_current};
+                tmp_current->left_ = other_current->left_->clone();
+                tmp_current->left_->parent_ = tmp_current;
                 other_current = other_current->left_;
                 tmp_current   = tmp_current->left_;
             }
             else if (other_current->right_ != nullptr && tmp_current->right_ == nullptr)
             {
-                tmp_current->right_ = new node_type{other_current->right_->key_, tmp_current};
+                tmp_current->right_ = other_current->right_->clone();
+                tmp_current->right_->parent_ = tmp_current;
                 other_current = other_current->right_;
                 tmp_current   = tmp_current->right_;
             }

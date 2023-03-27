@@ -3,10 +3,26 @@
 
 namespace Container
 {
-template<typename KeyT, class Cmp = std::less<KeyT>>
-class SplayTree final : public SearchTree<KeyT, Cmp>
+
+namespace detail
 {
-    using base = SearchTree<KeyT, Cmp>;
+struct SplayNode final : public Node
+{
+    using node_ptr = SplayNode*;
+    std::size_t size_ = 0;
+
+    node_ptr clone() const override
+    {
+        auto new_node = new SplayNode{base::key_};
+        new_node->size_ = size_;
+        return new_node;
+    }
+};
+} // namespace detail
+template<typename KeyT, class Cmp = std::less<KeyT>>
+class SplayTree final : public SearchTree<KeyT, Cmp, SplayNode>
+{
+    using base = SearchTree<KeyT, Cmp, SplayNode>;
 public:
     using typename base::node_type;
     using typename base::node_ptr;
@@ -82,6 +98,39 @@ public:
         splay(upper_bound);
         return ConstIterator{upper_bound, max_};
     }
+
+    using base::key_less;
+    using base::key_equal;
+
+    size_type number_less_than(const key_type& key) const noexcept
+    {
+        size_type number = 0;
+        node_ptr current = root_;
+        while (current != nullptr)
+            if (key_less(current->key_, key))
+            {
+                number += current->left_->size_ + 1;
+                current = current->right_;
+            }
+            else
+                current = current->left_;
+        return number;
+    }
+
+    size_type number_not_greater_than(const key_type& key) const noexcept
+    {
+        size_type number = 0;
+        node_ptr current = root_;
+        while (current != nullptr)
+            if (key_less(current->key_, key) || key_equal(current->key_, key))
+            {
+                number += current->left_->size_ + 1;
+                current = current->right_;
+            }
+            else
+                current = current->left_;
+        return number;
+    }
 private:
     std::pair<ConstIterator, bool> insert_impl(key_type&& key)
     {
@@ -97,12 +146,37 @@ private:
             return;
 
         while (node != root_)
+            // zig case
+            // pic for node->is_left_son()
+            /*\_____________________________________
+            |*      parent               node
+            |*      /    \               /  \
+            |*     /      c  ------>    a    \
+            |*   node                       parent     
+            |*   /  \                       /    \
+            |*  a    b                     b      c
+            |* _______________________________________                        
+            \*/
             if (node->parent_ == root_)
                 if (node->is_left_son())
                     right_rotate(node->parent_);
                 else
                     left_rotate(node->parent_);
             else
+            // zig-zig case
+            // pic for case in first if, else case is symmetric
+            /*\_____________________________________________________
+            |*             gr_par                node         
+            |*             /    \                /  \
+            |*            /      d              a    \
+            |*         parent                       parent
+            |*         /    \        ------>        /   \
+            |*        /      c                     b     \
+            |*      node                                gr_par
+            |*      /  \                                /    \
+            |*     a    b                              c      d
+            |* _______________________________________________________
+            \*/
                 if (node->is_left_son() && node->parent_->is_left_son())
                 {
                     right_rotate(node->parent_->parent_);
@@ -113,12 +187,25 @@ private:
                     left_rotate(node->parent_->parent_);
                     left_rotate(node->parent_);
                 }
-                else if (node->is_right_son() && node->parent_->is_right_son())
+            // zig-zag case
+            /*\________________________________________________________
+            |*          gr_par                    node
+            |*          /    \                   /    \
+            |*         /      c                 /      \
+            |*      parent                  parent    gr_par 
+            |*      /   \       ------>     /   \      /   \      
+            |*     a     \                 a     b    c     d
+            |*          node
+            |*          /  \
+            |*         b    c 
+            |* ________________________________________________________
+            \*/
+                else if (node->is_right_son() && node->parent_->is_left_son())
                 {
                     left_rotate(node->parent_);
                     right_rotate(node->parent_);
                 }
-                else // if (node.is_left_son() && node->parent_->is_right_son())
+                else // if (node->is_left_son() && node->parent_->is_right_son())
                 {
                     right_rotate(node->parent_);
                     left_rotate(node->parent_);
@@ -169,6 +256,9 @@ private:
         y->left_ = x;
         // parent of x is y now
         x->parent_ = y;
+
+        x->size_ = x->left_->size_ + x->right_->size_ + 1;
+        y->size_ = y->left->size_ + y->right_->size_ + 1;
     }
 
     /*\_________________________________________________
@@ -203,6 +293,9 @@ private:
 
         y->right_  = x;
         x->parent_ = y;
+
+        x->size_ = x->left_->size_ + x->right_->size_ + 1;
+        y->size_ = y->left->size_ + y->right_->size_ + 1;
     }
 };
 } // namespace Container

@@ -6,10 +6,15 @@ num_of_reqs = int(sys.argv[2])
 file_name   = sys.argv[3]
 
 def generate_keys():
-    keys = set()
-    while len(keys) < num_of_keys:
-        keys.add(random.randint(0, 4*num_of_keys))
-    return keys
+    keys_set = set()
+    keys_list = []
+    while len(keys_set) < num_of_keys:
+        sz = len(keys_set)
+        new_elem = random.randint(0, 4*num_of_keys) 
+        keys_set.add(new_elem)
+        if len(keys_set) > sz:
+            keys_list.append(new_elem)
+    return keys_list
 
 def generate_reqs(min, max):
     reqs = []
