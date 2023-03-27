@@ -21,7 +21,7 @@ int main()
     {
         int left_bound = 0, right_bound = 0;
         std::cin >> left_bound >> right_bound;
-        std::cout << tree.number_less_than(left_bound) - tree.number_not_greater_than(right_bound) << ' ';
+        std::cout << tree.number_not_greater_than(right_bound) - tree.number_less_than(left_bound)<< ' ';
     }
     std::cout << std::endl;
     return 0;

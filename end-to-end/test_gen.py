@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 import random, sys, math
 
+# number of keys           - 1 arg
+# number of requests       - 2 arg
+# file name                - 3 arg
+# [opt] mode (--normal,
+# --triangular, --uniform) - 4 arg
+
 num_of_keys = int(sys.argv[1])
 num_of_reqs = int(sys.argv[2])
 file_name   = sys.argv[3]
@@ -31,9 +37,12 @@ def generate_uniform_reqs(min, max):
 
 def generate_triangular_reqs(min, max):
     reqs = []
+    average = int(random.triangular(min, max, (min + max)/2))
+    first  = int(random.triangular(min, (max - 1), average))
+    second = int(random.triangular(first, max, average))    
     for _ in range(0, num_of_reqs):
-        first  = int(random.triangular(min, max - 1, (min + max -1)/2))
-        second = int(random.triangular(first, max, (first + max)/2))
+        first  = int(random.triangular(min, (max - 1), average))
+        second = int(random.triangular(first, max, average))    
         reqs.append(first)
         reqs.append(second)
     return reqs
