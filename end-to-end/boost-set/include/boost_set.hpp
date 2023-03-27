@@ -57,6 +57,7 @@ public:
     }
 private:
     using base::key_less;
+    using base::key_equal;
 
 public:
     const key_type& operator[](size_type index) const noexcept

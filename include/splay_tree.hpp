@@ -6,26 +6,52 @@ namespace Container
 
 namespace detail
 {
-struct SplayNode final : public Node
+template<typename KeyT>    
+struct SplayNode final : public Node<KeyT>
 {
+    using base = Node<KeyT>;
+    using typename base::key_type;
     using node_ptr = SplayNode*;
+
     std::size_t size_ = 0;
 
     node_ptr clone() const override
     {
-        auto new_node = new SplayNode{base::key_};
+        auto new_node = new SplayNode{};
+        new_node->key_ = base::key_;
         new_node->size_ = size_;
         return new_node;
+    }
+
+    void create(key_type&& key) override
+    {
+        base::key_ = std::move(key);
+        size_ = 1;
+    }
+
+    void calc_size()
+    {
+        size_ = 1;
+        if (base::left_)
+            size_ += static_cast<node_ptr>(base::left_)->size_;
+        if (base::right_)
+            size_ += static_cast<node_ptr>(base::right_)->size_;
+    }
+
+    void dump(std::fstream& file) const
+    {
+        file << "Node_" << this << "[fillcolor=lightgreen";    
+        file << ", label = \"{<_node_>ptr:\\n " << this << "| parent:\\n " << base::parent_ << "| key: " << base::key_ << "| size: " << size_
+        << "| {<left>left:\\n " << base::left_ << "| <right>right:\\n " << base::right_ << "}}\"];" << std::endl;
     }
 };
 } // namespace detail
 template<typename KeyT, class Cmp = std::less<KeyT>>
-class SplayTree final : public SearchTree<KeyT, Cmp, SplayNode>
+class SplayTree final : public SearchTree<KeyT, Cmp, detail::SplayNode<KeyT>>
 {
-    using base = SearchTree<KeyT, Cmp, SplayNode>;
+    using base = SearchTree<KeyT, Cmp, detail::SplayNode<KeyT>>;
 public:
-    using typename base::node_type;
-    using typename base::node_ptr;
+    using node_ptr = detail::SplayNode<KeyT>*;
     using typename base::const_node_ptr;
     using typename base::key_type;
     using typename base::size_type;
@@ -36,6 +62,8 @@ private:
     using base::root_;
     using base::size_;
     using base::max_;
+
+    using base::cast;
 
 public:
     SplayTree() = default;
@@ -99,36 +127,50 @@ public:
         return ConstIterator{upper_bound, max_};
     }
 
+private:
     using base::key_less;
     using base::key_equal;
-
+    
+public:
     size_type number_less_than(const key_type& key) const noexcept
     {
         size_type number = 0;
-        node_ptr current = root_;
+        node_ptr current = root_, splay_node = current;;
         while (current != nullptr)
+        {
+            splay_node = current;
             if (key_less(current->key_, key))
             {
-                number += current->left_->size_ + 1;
-                current = current->right_;
+                if (current->left_)
+                    number += cast(current->left_)->size_;
+                number += 1;
+                current = cast(current->right_);
             }
             else
-                current = current->left_;
+                current = cast(current->left_);
+        }
+        splay(splay_node);
         return number;
     }
 
     size_type number_not_greater_than(const key_type& key) const noexcept
     {
         size_type number = 0;
-        node_ptr current = root_;
+        node_ptr current = root_, splay_node = current;;
         while (current != nullptr)
+        {
+            splay_node = current;
             if (key_less(current->key_, key) || key_equal(current->key_, key))
             {
-                number += current->left_->size_ + 1;
-                current = current->right_;
+                if (current->left_)
+                    number += cast(current->left_)->size_;
+                number += 1;
+                current = cast(current->right_);
             }
             else
-                current = current->left_;
+                current = cast(current->left_);
+        }
+        splay(splay_node);
         return number;
     }
 private:
@@ -159,9 +201,9 @@ private:
             \*/
             if (node->parent_ == root_)
                 if (node->is_left_son())
-                    right_rotate(node->parent_);
+                    right_rotate(cast(node->parent_));
                 else
-                    left_rotate(node->parent_);
+                    left_rotate(cast(node->parent_));
             else
             // zig-zig case
             // pic for case in first if, else case is symmetric
@@ -179,13 +221,13 @@ private:
             \*/
                 if (node->is_left_son() && node->parent_->is_left_son())
                 {
-                    right_rotate(node->parent_->parent_);
-                    right_rotate(node->parent_);
+                    right_rotate(cast(node->parent_->parent_));
+                    right_rotate(cast(node->parent_));
                 }
                 else if (node->is_right_son() && node->parent_->is_right_son())
                 {
-                    left_rotate(node->parent_->parent_);
-                    left_rotate(node->parent_);
+                    left_rotate(cast(node->parent_->parent_));
+                    left_rotate(cast(node->parent_));
                 }
             // zig-zag case
             /*\________________________________________________________
@@ -202,13 +244,13 @@ private:
             \*/
                 else if (node->is_right_son() && node->parent_->is_left_son())
                 {
-                    left_rotate(node->parent_);
-                    right_rotate(node->parent_);
+                    left_rotate(cast(node->parent_));
+                    right_rotate(cast(node->parent_));
                 }
                 else // if (node->is_left_son() && node->parent_->is_right_son())
                 {
-                    right_rotate(node->parent_);
-                    left_rotate(node->parent_);
+                    right_rotate(cast(node->parent_));
+                    left_rotate(cast(node->parent_));
                 }
     }
 
@@ -228,7 +270,7 @@ private:
         if (x->right_ == nullptr)
             return;
         // declare y as right son of x
-        node_ptr y = x->right_;
+        node_ptr y = cast(x->right_);
         // new right son of x is yl 
         x->right_ = y->left_;
 
@@ -257,8 +299,8 @@ private:
         // parent of x is y now
         x->parent_ = y;
 
-        x->size_ = x->left_->size_ + x->right_->size_ + 1;
-        y->size_ = y->left->size_ + y->right_->size_ + 1;
+        x->calc_size();
+        y->calc_size();
     }
 
     /*\_________________________________________________
@@ -276,7 +318,7 @@ private:
     {
         if (x->left_ == nullptr)
             return;
-        node_ptr y = x->left_;
+        node_ptr y = cast(x->left_);
         x->left_ = y->right_;
 
         if (y->right_ != nullptr)
@@ -294,8 +336,8 @@ private:
         y->right_  = x;
         x->parent_ = y;
 
-        x->size_ = x->left_->size_ + x->right_->size_ + 1;
-        y->size_ = y->left->size_ + y->right_->size_ + 1;
+        x->calc_size();
+        y->calc_size();
     }
 };
 } // namespace Container

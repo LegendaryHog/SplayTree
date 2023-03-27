@@ -11,6 +11,7 @@ TEST(SplayTree, default_constructor)
 TEST(SplayTree, insert_n_iterators)
 {
     SplayTree<int> tree {};
+
     auto ret0 = tree.insert(0);
     EXPECT_TRUE(ret0.second);
     EXPECT_EQ(*ret0.first, 0);
@@ -46,7 +47,6 @@ TEST(SplayTree, insert_n_iterators)
     SplayTree<int> tree2 {};
     for (int i = 0; i < 40; i++)
         tree2.insert(i);
-    tree2.debug_graph_dump("dump_ins");
 }
 
 TEST(SplayTree, ctors_n_iterators_n_equlity)
@@ -199,7 +199,7 @@ TEST(SplayTree, erase)
 
 TEST(BoostSet, number_less_than)
 {
-    BoostSet<int> set = {0, 1, 2, 3, 7, 9, 11, 15, 20, 21, 56, 70};
+    SplayTree<int> set = {0, 1, 2, 3, 7, 9, 11, 15, 20, 21, 56, 70};
     EXPECT_EQ(set.number_less_than(0), 0);
     EXPECT_EQ(set.number_less_than(-1), 0);
     EXPECT_EQ(set.number_less_than(1), 1);
@@ -245,7 +245,7 @@ TEST(BoostSet, number_not_greater_than)
     EXPECT_EQ(set.number_not_greater_than(6), 4);
     EXPECT_EQ(set.number_not_greater_than(7), 5);
     EXPECT_EQ(set.number_not_greater_than(8), 5);
-    EXPECT_EQ(set.number_not_greater_than(9), 5);
+    EXPECT_EQ(set.number_not_greater_than(9), 6);
     EXPECT_EQ(set.number_not_greater_than(10), 6);
     EXPECT_EQ(set.number_not_greater_than(11), 7);
     EXPECT_EQ(set.number_not_greater_than(12), 7);
@@ -266,7 +266,3 @@ TEST(BoostSet, number_not_greater_than)
     EXPECT_EQ(set.number_not_greater_than(150), 12);
     EXPECT_EQ(set.number_not_greater_than(420), 12);
 }
-
-
-
-

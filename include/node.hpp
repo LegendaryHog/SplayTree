@@ -18,8 +18,11 @@ struct Node
     
     virtual node_ptr clone() const
     {
-        return new Node{key_}
+        auto new_node = new Node{};
+        new_node->key_ = key_;
+        return new_node;
     }
+    virtual void create(key_type&& key) {key_ = std::move(key);}
 
     bool is_left_son()  const noexcept {return this == parent_->left_;}
     bool is_right_son() const noexcept {return this == parent_->right_;}
@@ -31,9 +34,6 @@ struct Node
         << "| {<left>left:\\n " << left_ << "| <right>right:\\n " << right_ << "}}\"];" << std::endl;
     }
 };
-
-template<typename Derived>
-concept derived_from_node = std::base_of<Node, Derived>::value;
 
 // for sorted search tree
 template<typename KeyT>
@@ -54,4 +54,8 @@ Node<KeyT>* find_max(Node<KeyT>* root) noexcept
 }
 
 } // namespace detail
+
+template<typename Derived, typename KeyT>
+concept derived_from_node = std::is_base_of<detail::Node<KeyT>, Derived>::value;
+
 } // namespace Container

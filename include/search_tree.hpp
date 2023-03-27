@@ -7,7 +7,7 @@
 namespace Container
 {
 
-template<typename KeyT, class Cmp = std::less<KeyT>, derived_from_node SearchNode = detail::Node<KeyT>> 
+template<typename KeyT, class Cmp = std::less<KeyT>, derived_from_node<KeyT> SearchNode = detail::Node<KeyT>> 
 class SearchTree : public Tree<KeyT, SearchNode>
 {
     using base = Tree<KeyT, SearchNode>;
@@ -18,7 +18,7 @@ public:
     using typename base::key_type;
     using typename base::size_type;
     
-    using ConstIterator = detail::SearchTreeIterator<key_type, Cmp>;
+    using ConstIterator = detail::SearchTreeIterator<key_type, Cmp, SearchNode>;
     using Iterator      = ConstIterator;
 
 protected:
@@ -34,6 +34,7 @@ protected:
         return !cmp(key1, key2) && !cmp(key2, key1);
     }
 
+    using base::cast;
 //----------------------------------------=| Ctors start |=---------------------------------------------
 public:
     SearchTree() = default;
@@ -69,7 +70,7 @@ public:
 //----------------------------------------=| Big five start |=------------------------------------------
     SearchTree(SearchTree&&) = default;
     SearchTree(const SearchTree& other)
-    :base::Tree(other), min_ {detail::find_min(root_)}, max_ {detail::find_max(root_)}
+    :base::Tree(other), min_ {cast(detail::find_min(root_))}, max_ {cast(detail::find_max(root_))}
     {}
     SearchTree& operator=(const SearchTree&) = default;
     SearchTree& operator=(SearchTree&&) = default;
@@ -92,9 +93,9 @@ protected:
         node_ptr node = root_;
         while (node != nullptr)
             if (key_less(key, node->key_))
-                node = node->left_;
+                node = cast(node->left_);
             else if (key_less(node->key_, key))
-                node = node->right_;
+                node = cast(node->right_);
             else
                 return ConstIterator{node, max_};
         return end();
@@ -119,12 +120,12 @@ private:
             y = x;
             // if key less x.key turn left
             if (key_less(key, x->key_))
-                x = x->left_;
+                x = cast(x->left_);
             // else turn right
             else if (key_equal(key, x->key_))
                 return x;
             else
-                x = x->right_;
+                x = cast(x->right_);
         }
         return y;
     }
@@ -137,7 +138,9 @@ protected:
         if (parent != nullptr && key_equal(parent->key_, key))
             return std::pair{ConstIterator{parent, max_}, false};
 
-        node_ptr new_node = new node_type{std::move(key), parent};
+        node_ptr new_node = new node_type{};
+        new_node->create(std::move(key));
+        new_node->parent_ = parent;
         insert_in_place(new_node);
         return std::pair{ConstIterator{new_node, max_}, true};
     }
@@ -241,9 +244,9 @@ protected:
         if (z->left_ == nullptr)
         {
             // save root os subtree that will be replace
-            x = z->right_;
+            x = cast(z->right_);
             // replace right subtree of z with z
-            transplant(z, z->right_);
+            transplant(z, cast(z->right_));
         }
         // if z has only left subtree
         /*\_____________________________
@@ -258,8 +261,8 @@ protected:
         \*/
         else if (z->right_ == nullptr)
         {
-            x = z->left_;
-            transplant(z, z->left_);
+            x = cast(z->left_);
+            transplant(z, cast(z->left_));
         }
         /*\____________________________________________________
         |*      z                z                     y       |
@@ -280,9 +283,9 @@ protected:
         {
             // find y in right subtree of x
             // y most left of z->right than y->left_ == nullptr
-            y = detail::find_min(z->right_);
+            y = cast(detail::find_min(z->right_));
             // save root of subtree that we maybe need to fix
-            x = y->right_;
+            x = cast(y->right_);
             
             //first arrow on picture
             // if y right son of z
@@ -293,7 +296,7 @@ protected:
             {
                 // replace y with right subtree of y
                 // after this x->parent_ will have correct value
-                transplant(y, y->right_);
+                transplant(y, cast(y->right_));
                 // connect right son of z and y
                 y->right_ = z->right_;
                 y->right_->parent_ = y;
@@ -314,9 +317,9 @@ private:
     void delete_fix_min_max(node_ptr node)
     {
         if (node == min_)
-            min_ = detail::find_min(root_);
+            min_ = cast(detail::find_min(root_));
         if (node == max_)
-            max_ = detail::find_max(root_);
+            max_ = cast(detail::find_max(root_));
     }
 
 public:
@@ -354,10 +357,10 @@ protected:
             if (!key_less(current->key_, key))
             {
                 result = current;
-                current = current->left_;
+                current = cast(current->left_);
             }
             else
-                current = current->right_;
+                current =  cast(current->right_);
         return result;
     }
 
@@ -368,10 +371,10 @@ protected:
             if (key_less(key, current->key_))
             {
                 result = current;
-                current = current->left_;
+                current = cast(current->left_);
             }
             else
-                current = current->right_;
+                current = cast(current->right_);
         return result;
     }
 
@@ -441,8 +444,8 @@ public:
 //----------------------------------------=| equal_to end |=--------------------------------------------
 }; // class ISearchTree
 
-template<typename KeyT, class Cmp = std::less<KeyT>>
-bool operator==(const SearchTree<KeyT, Cmp>& lhs, const SearchTree<KeyT, Cmp>& rhs)
+template<typename KeyT, class Cmp = std::less<KeyT>, derived_from_node<KeyT> SearchNode = detail::Node<KeyT>>
+bool operator==(const SearchTree<KeyT, Cmp, SearchNode>& lhs, const SearchTree<KeyT, Cmp, SearchNode>& rhs)
 {
     return lhs.equal_to(rhs);
 }

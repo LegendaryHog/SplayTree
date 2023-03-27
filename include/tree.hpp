@@ -4,7 +4,7 @@
 namespace Container
 {
 
-template<typename KeyT, derived_from_node Node>
+template<typename KeyT, derived_from_node<KeyT> Node>
 class Tree
 {
 public:
@@ -18,6 +18,10 @@ protected:
     mutable node_ptr  root_ = nullptr;
     size_type size_ = 0;
 
+    static node_ptr cast(detail::Node<KeyT>* node)
+    {
+        return static_cast<node_ptr>(node);
+    }
 public:
     Tree() = default;
 
@@ -31,7 +35,6 @@ private:
         std::swap(root_, rhs.root_);
         std::swap(size_, rhs.size_);
     }
-
 public:
     Tree(Tree&& other)
     {
@@ -59,20 +62,20 @@ public:
             {
                 tmp_current->left_ = other_current->left_->clone();
                 tmp_current->left_->parent_ = tmp_current;
-                other_current = other_current->left_;
-                tmp_current   = tmp_current->left_;
+                other_current = cast(other_current->left_);
+                tmp_current   = cast(tmp_current->left_);
             }
             else if (other_current->right_ != nullptr && tmp_current->right_ == nullptr)
             {
                 tmp_current->right_ = other_current->right_->clone();
                 tmp_current->right_->parent_ = tmp_current;
-                other_current = other_current->right_;
-                tmp_current   = tmp_current->right_;
+                other_current = cast(other_current->right_);
+                tmp_current   = cast(tmp_current->right_);
             }
             else
             {
-                other_current = other_current->parent_;
-                tmp_current   = tmp_current->parent_;
+                other_current = cast(other_current->parent_);
+                tmp_current   = cast(tmp_current->parent_);
             }
         swap(tmp);
     }
@@ -92,12 +95,12 @@ public:
         auto current = root_;
         while (current != nullptr)
             if (current->left_ != nullptr)
-                current = current->left_;
+                current = static_cast<node_ptr>(current->left_);
             else if (current->right_ != nullptr)
-                current = current->right_;
+                current = static_cast<node_ptr>(current->right_);
             else
             {
-                auto parent = current->parent_;
+                auto parent = static_cast<node_ptr>(current->parent_);
 
                 if (current == root_)
                     break;
