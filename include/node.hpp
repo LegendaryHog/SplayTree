@@ -19,7 +19,7 @@ struct Node
     
     void dump(std::fstream& file) const
     {
-        file << "Node_" << this << "[fillcolor=";    
+        file << "Node_" << this << "[fillcolor=red";    
         file << ", label = \"{<_node_>ptr:\\n " << this << "| parent:\\n " << parent_ << "| key: " << key_
         << "| {<left>left:\\n " << left_ << "| <right>right:\\n " << right_ << "}}\"];" << std::endl;
     }

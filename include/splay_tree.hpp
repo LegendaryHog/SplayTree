@@ -50,7 +50,7 @@ public:
         return insert_impl(std::move(key));
     }
 
-    ConstIterator find(const key_type& key) override
+    ConstIterator find(const key_type& key) const override
     {
         auto itr = base::find_key(key);
         splay(itr.base());
@@ -65,21 +65,37 @@ public:
             return end();
         auto itr_next = std::next(itr);
         auto node = itr.base();
-        base::erase_from_tree(node);
-        splay(node);
+        splay(base::erase_from_tree(node));
         delete node;
         return itr_next;
+    }
+
+    ConstIterator lower_bound(const key_type& key) const override
+    {
+        auto lower_bound = base::lower_bound_ptr(key);
+        splay(lower_bound);
+        return ConstIterator{lower_bound, max_};
+    }
+    ConstIterator upper_bound(const key_type& key) const override 
+    {
+        auto upper_bound = base::upper_bound_ptr(key);
+        splay(upper_bound);
+        return ConstIterator{upper_bound, max_};
     }
 private:
     std::pair<ConstIterator, bool> insert_impl(key_type&& key)
     {
         auto ret = base::insert_key(std::move(key));
-        splay(ret.first.base());
+        if (ret.second)
+            splay(ret.first.base());
         return ret;
     }
 
-    void splay(node_ptr node)
+    void splay(node_ptr node) const
     {
+        if (!node)
+            return;
+
         while (node != root_)
             if (node->parent_ == root_)
                 if (node->is_left_son())
@@ -120,8 +136,10 @@ private:
     |*       yl     yr                l     yl          |
     |*__________________________________________________|
     \*/
-    void left_rotate(node_ptr x) noexcept
+    void left_rotate(node_ptr x) const noexcept
     {
+        if (x->right_ == nullptr)
+            return;
         // declare y as right son of x
         node_ptr y = x->right_;
         // new right son of x is yl 
@@ -164,8 +182,10 @@ private:
     |* yl     yr                           yr      r    |
     |* _________________________________________________|
     \*/
-    void right_rotate(node_ptr x) noexcept
+    void right_rotate(node_ptr x) const noexcept
     {
+        if (x->left_ == nullptr)
+            return;
         node_ptr y = x->left_;
         x->left_ = y->right_;
 

@@ -87,7 +87,7 @@ public:
 
 //----------------------------------------=| Find start |=----------------------------------------------
 protected:
-    ConstIterator find_key(const key_type& key)
+    ConstIterator find_key(const key_type& key) const
     {
         node_ptr node = root_;
         while (node != nullptr)
@@ -100,7 +100,7 @@ protected:
         return end();
     }
 public:
-    virtual ConstIterator find(const key_type& key)
+    virtual ConstIterator find(const key_type& key) const
     {
         return find_key(key);
     }
@@ -220,7 +220,7 @@ private:
     }
 protected:
     // delete z from tree with saving all invariants
-    void erase_from_tree(node_ptr z)
+    node_ptr erase_from_tree(node_ptr z)
     {
         // decrement size
         size_--;
@@ -307,6 +307,7 @@ protected:
         }
 
         delete_fix_min_max(z);
+        return y;
     }
 
 private:
@@ -345,7 +346,7 @@ public:
 //----------------------------------------=| Erase end |=-----------------------------------------------
 
 //----------------------------------------=| Bounds start |=--------------------------------------------
-private:
+protected:
     node_ptr lower_bound_ptr(const key_type& key) const
     {
         node_ptr result = nullptr, current = root_;
@@ -375,8 +376,8 @@ private:
     }
 
 public:
-    ConstIterator lower_bound(const key_type& key) const {return ConstIterator{lower_bound_ptr(key), nullptr};}
-    ConstIterator upper_bound(const key_type& key) const {return ConstIterator{upper_bound_ptr(key), nullptr};}
+    virtual ConstIterator lower_bound(const key_type& key) const {return ConstIterator{lower_bound_ptr(key), max_};}
+    virtual ConstIterator upper_bound(const key_type& key) const {return ConstIterator{upper_bound_ptr(key), max_};}
 //----------------------------------------=| Bounds end |=----------------------------------------------
 
 //----------------------------------------=| Graph dump start |=----------------------------------------  
@@ -392,7 +393,7 @@ public:
         file << "}" << std::endl;
         file.close();
 
-        std::system(("dot -T svg " + filename + ".dot -o " + filename + ".svg").c_str());
+        std::system(("dot -T png " + filename + ".dot -o " + filename + ".png").c_str());
         std::system(("rm " + filename + ".dot").c_str());
     }
 
@@ -400,21 +401,13 @@ private:
     void descriptor_dump(std::fstream& file) const
     {
         file << "\tTree [fillcolor=purple, label = \"{ ISearchTree\\ndescriptor| size: " << size() << "| <root> root:\\n " << root_
-        << "| min key: " << minimum() << "| max key: " << maximum() << "| <null> Null:\\n " << nullptr << "}\"];" << std::endl;
-    }
-
-    void nullptrdump(std::fstream& file) const
-    {
-        file << "nullptr" << "[fillcolor=navy, label = \"{Null node | ptr:\\n " << nullptr << "| {min:\\n " << min_ <<
-        "| max:\\n " << max_ << "}}\"];" << std::endl;
+        << "| min key: " << minimum() << "| max key: " << maximum() << "}\"];" << std::endl;
     }
     
     void tree_dump(std::fstream& file) const
     {
         if (empty())
             return;
-
-        nullptrdump(file);
 
         for (auto itr = cbegin(), end = cend(); itr != end; ++itr)
             itr.base()->dump(file);
@@ -430,7 +423,6 @@ private:
         }
 
         file << "Tree:root:e -> Node_" << root_ << ":_node_:n;" << std::endl;
-        file << "Tree:null:w -> nullptr:n;" << std::endl;
     }
 //----------------------------------------=| Graph dump end |=------------------------------------------
 

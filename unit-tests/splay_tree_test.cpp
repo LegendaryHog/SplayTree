@@ -43,7 +43,7 @@ TEST(SplayTree, insert_n_iterators)
 
 TEST(SplayTree, ctors_n_iterators_n_equlity)
 {
-    std::vector<int> vec  {-1, 0, 1, 3, 5, 7, 8};
+    std::vector<int> vec {-1, 0, 1, 3, 5, 7, 8};
     SplayTree<int> tree0 (vec.cbegin(), vec.cend());
     SplayTree<int> tree1 {8, 7, 0, 1, 5, 3, -1};
 
@@ -68,7 +68,7 @@ TEST(SplayTree, ctors_n_iterators_n_equlity)
 
 TEST(SplayTree, big_five)
 {
-    SplayTree<int> origin {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    SplayTree<int> origin {3, 1, 2, 4, 5, 6, 7, 8, 9, 10};
 
     SplayTree<int> cpy1 {origin};
     EXPECT_EQ(origin, cpy1);

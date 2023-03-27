@@ -14,7 +14,7 @@ public:
     using size_type      = typename std::size_t;
 
 protected:
-    node_ptr  root_ = nullptr;
+    mutable node_ptr  root_ = nullptr;
     size_type size_ = 0;
 
 public:
