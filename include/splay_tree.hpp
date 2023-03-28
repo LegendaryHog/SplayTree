@@ -1,5 +1,6 @@
 #pragma once
 #include "search_tree.hpp"
+#include <cmath>
 
 namespace Container
 {
@@ -18,31 +19,31 @@ struct SplayNode final : public Node<KeyT>
     node_ptr clone() const override
     {
         auto new_node = new SplayNode{};
-        new_node->key_ = base::key_;
+        new_node->key_ = this->key_;
         new_node->size_ = size_;
         return new_node;
     }
 
     void create(key_type&& key) override
     {
-        base::key_ = std::move(key);
+        this->key_ = std::move(key);
         size_ = 1;
     }
 
     void calc_size()
     {
         size_ = 1;
-        if (base::left_)
-            size_ += static_cast<node_ptr>(base::left_)->size_;
+        if (this->left_)
+            size_ += static_cast<node_ptr>(this->left_)->size_;
         if (base::right_)
-            size_ += static_cast<node_ptr>(base::right_)->size_;
+            size_ += static_cast<node_ptr>(this->right_)->size_;
     }
 
     void dump(std::fstream& file) const
     {
         file << "Node_" << this << "[fillcolor=lightgreen";    
-        file << ", label = \"{<_node_>ptr:\\n " << this << "| parent:\\n " << base::parent_ << "| key: " << base::key_ << "| size: " << size_
-        << "| {<left>left:\\n " << base::left_ << "| <right>right:\\n " << base::right_ << "}}\"];" << std::endl;
+        file << ", label = \"{<_node_>ptr:\\n " << this << "| parent:\\n " << this->parent_ << "| key: " << this->key_ << "| size: " << size_
+        << "| {<left>left:\\n " << this->left_ << "| <right>right:\\n " << this->right_ << "}}\"];" << std::endl;
     }
 };
 } // namespace detail
@@ -135,7 +136,7 @@ public:
     size_type number_less_than(const key_type& key) const noexcept
     {
         size_type number = 0;
-        node_ptr current = root_, splay_node = current;;
+        node_ptr current = root_, splay_node = current;
         while (current != nullptr)
         {
             splay_node = current;
@@ -156,7 +157,7 @@ public:
     size_type number_not_greater_than(const key_type& key) const noexcept
     {
         size_type number = 0;
-        node_ptr current = root_, splay_node = current;;
+        node_ptr current = root_, splay_node = current;
         while (current != nullptr)
         {
             splay_node = current;
@@ -172,6 +173,18 @@ public:
         }
         splay(splay_node);
         return number;
+    }
+
+    size_type distance(ConstIterator first, ConstIterator last)
+    {
+        size_type dist = 0;
+        while(first != last)
+        {
+            splay(first.base());
+            first++;
+            dist++;
+        }
+        return dist;
     }
 private:
     std::pair<ConstIterator, bool> insert_impl(key_type&& key)

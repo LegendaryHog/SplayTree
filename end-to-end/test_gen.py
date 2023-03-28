@@ -27,9 +27,11 @@ def generate_keys():
 
 def generate_uniform_reqs(min, max):
     reqs = []
+    dist = int((max - min) / 5)
+    average = random.randint(min + dist, max - dist)
     for _ in range(0, num_of_reqs):
-        first  = random.randint(min, max - 1)
-        second = random.randint(first, max)
+        first  = random.randint(average - dist, average + int(dist/2))
+        second = random.randint(first, average + dist)
         reqs.append(first)
         reqs.append(second)
     return reqs
@@ -38,11 +40,10 @@ def generate_uniform_reqs(min, max):
 def generate_triangular_reqs(min, max):
     reqs = []
     average = int(random.triangular(min, max, (min + max)/2))
-    first  = int(random.triangular(min, (max - 1), average))
-    second = int(random.triangular(first, max, average))    
+    dist = (max - min) / 4
     for _ in range(0, num_of_reqs):
-        first  = int(random.triangular(min, (max - 1), average))
-        second = int(random.triangular(first, max, average))    
+        first  = int(random.triangular(average - dist, average + dist - 1, average))
+        second = int(random.triangular(first, average + dist, average))    
         reqs.append(first)
         reqs.append(second)
     return reqs

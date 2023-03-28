@@ -21,9 +21,12 @@ int main()
     {
         int left_bound = 0, right_bound = 0;
         std::cin >> left_bound >> right_bound;
+#ifdef SPLAY
+        std::cout << tree.distance(tree.lower_bound(left_bound), tree.upper_bound(right_bound));
+#else
         std::cout << tree.number_not_greater_than(right_bound) - tree.number_less_than(left_bound) << ' ';
+#endif
     }
-    //tree.debug_graph_dump("dump_run");
     std::cout << std::endl;
     return 0;
 }

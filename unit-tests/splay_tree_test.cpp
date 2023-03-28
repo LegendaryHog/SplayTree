@@ -171,6 +171,11 @@ TEST(SplayTree, lower_n_upper_bounds)
     EXPECT_EQ(*set.lower_bound(-4), -4);
     EXPECT_EQ(*set.lower_bound(6), 6);
     EXPECT_EQ(*set.lower_bound(7), 8);
+
+    SplayTree<int> tree {13, 14, 18, 21, 29, 31, 34, 36, 39, 40};
+    EXPECT_EQ(tree.lower_bound(41), tree.end());
+    EXPECT_EQ(*tree.upper_bound(39), 40);
+    EXPECT_EQ(std::distance(tree.upper_bound(39), tree.lower_bound(41)), 1);
 }
 
 TEST(SplayTree, erase)
@@ -197,7 +202,7 @@ TEST(SplayTree, erase)
     EXPECT_EQ(*set2.erase(citr1, citr2), 12);
 }
 
-TEST(BoostSet, number_less_than)
+TEST(SplayTree, number_less_than)
 {
     SplayTree<int> set = {0, 1, 2, 3, 7, 9, 11, 15, 20, 21, 56, 70};
     EXPECT_EQ(set.number_less_than(0), 0);
@@ -232,7 +237,7 @@ TEST(BoostSet, number_less_than)
     EXPECT_EQ(set.number_less_than(420), 12);
 }
 
-TEST(BoostSet, number_not_greater_than)
+TEST(SplayTree, number_not_greater_than)
 {
     SplayTree<int> set = {0, 1, 2, 3, 7, 9, 11, 15, 20, 21, 56, 70};
     EXPECT_EQ(set.number_not_greater_than(0), 1);
@@ -265,4 +270,11 @@ TEST(BoostSet, number_not_greater_than)
     EXPECT_EQ(set.number_not_greater_than(100), 12);
     EXPECT_EQ(set.number_not_greater_than(150), 12);
     EXPECT_EQ(set.number_not_greater_than(420), 12);
+}
+
+TEST(SplayTree, distance)
+{
+    SplayTree<int> tree {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    EXPECT_NE(tree.begin(), tree.end());
+    EXPECT_EQ(tree.distance(tree.begin(), tree.end()), 10);
 }

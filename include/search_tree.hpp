@@ -360,7 +360,7 @@ protected:
                 current = cast(current->left_);
             }
             else
-                current =  cast(current->right_);
+                current = cast(current->right_);
         return result;
     }
 
