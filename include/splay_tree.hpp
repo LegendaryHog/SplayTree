@@ -35,7 +35,7 @@ struct SplayNode final : public Node<KeyT>
         size_ = 1;
         if (this->left_)
             size_ += static_cast<node_ptr>(this->left_)->size_;
-        if (base::right_)
+        if (this->right_)
             size_ += static_cast<node_ptr>(this->right_)->size_;
     }
 
