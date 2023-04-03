@@ -82,23 +82,31 @@ TEST(SplayTree, big_five)
     EXPECT_EQ(origin, cpy1);
     EXPECT_EQ(origin.minimum(), cpy1.minimum());
     EXPECT_EQ(origin.maximum(), cpy1.maximum());
+    EXPECT_EQ(cpy1.number_less_than(6), 5);
+    EXPECT_EQ(cpy1.number_not_greater_than(7), 7);
 
     SplayTree<int> cpy2 {1, 2, 3, 4};
     cpy2 = origin;
     EXPECT_EQ(cpy2, origin);
     EXPECT_EQ(origin.minimum(), cpy2.minimum());
     EXPECT_EQ(origin.maximum(), cpy2.maximum());
+    EXPECT_EQ(cpy2.number_less_than(6), 5);
+    EXPECT_EQ(cpy2.number_not_greater_than(7), 7);
 
     SplayTree<int> move1 {std::move(cpy1)};
     EXPECT_EQ(move1, origin);
     EXPECT_EQ(origin.minimum(), move1.minimum());
     EXPECT_EQ(origin.maximum(), move1.maximum());
+    EXPECT_EQ(move1.number_less_than(6), 5);
+    EXPECT_EQ(move1.number_not_greater_than(7), 7);
 
     SplayTree<int> move2 {1, 2, 4};
     move2 = std::move(cpy2);
     EXPECT_EQ(move2, origin);
     EXPECT_EQ(origin.minimum(), move2.minimum());
     EXPECT_EQ(origin.maximum(), move2.maximum());
+    EXPECT_EQ(move2.number_less_than(6), 5);
+    EXPECT_EQ(move2.number_not_greater_than(7), 7);
 }
 
 TEST(SplayTree, Iterators)

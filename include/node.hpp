@@ -15,14 +15,11 @@ struct Node
 
     key_type key_ {};
     node_ptr parent_ = nullptr, left_ = nullptr, right_ = nullptr;
-    
-    virtual node_ptr clone() const
-    {
-        auto new_node = new Node{};
-        new_node->key_ = key_;
-        return new_node;
-    }
-    virtual void create(key_type&& key) {key_ = std::move(key);}
+
+    explicit Node(key_type&& key): key_ {std::move(key)} {}
+    explicit Node(const key_type& key): key_ {key} {}
+
+    Node(const Node& node): key_ {node.key_} {}
 
     bool is_left_son()  const noexcept {return this == parent_->left_;}
     bool is_right_son() const noexcept {return this == parent_->right_;}
@@ -33,6 +30,8 @@ struct Node
         file << ", label = \"{<_node_>ptr:\\n " << this << "| parent:\\n " << parent_ << "| key: " << key_
         << "| {<left>left:\\n " << left_ << "| <right>right:\\n " << right_ << "}}\"];" << std::endl;
     }
+
+    virtual ~Node() = default;
 };
 
 // for sorted search tree
@@ -40,7 +39,8 @@ template<typename KeyT>
 Node<KeyT>* find_min(Node<KeyT>* root) noexcept
 {
     auto node = root;
-    for (node = root; node->left_ != nullptr; node = node->left_) {}
+    if (node)
+        for (node = root; node->left_ != nullptr; node = node->left_) {}
     return node;
 }
 
@@ -49,7 +49,8 @@ template<typename KeyT>
 Node<KeyT>* find_max(Node<KeyT>* root) noexcept
 {
     auto node = root;
-    for (node = root; node->right_ != nullptr; node = node->right_) {}
+    if (node)
+        for (node = root; node->right_ != nullptr; node = node->right_) {}
     return node;
 }
 

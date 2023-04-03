@@ -14,21 +14,14 @@ struct SplayNode final : public Node<KeyT>
     using typename base::key_type;
     using node_ptr = SplayNode*;
 
-    std::size_t size_ = 0;
+    std::size_t size_ = 1;
 
-    node_ptr clone() const override
-    {
-        auto new_node = new SplayNode{};
-        new_node->key_ = this->key_;
-        new_node->size_ = size_;
-        return new_node;
-    }
+    explicit SplayNode(key_type&& key): base::Node(std::move(key)) {}
+    explicit SplayNode(const key_type& key): base::Node(key) {}
 
-    void create(key_type&& key) override
-    {
-        this->key_ = std::move(key);
-        size_ = 1;
-    }
+    SplayNode(const SplayNode& node)
+    :base::Node(node.key_), size_ {node.size_}
+    {}
 
     void calc_size()
     {
@@ -66,6 +59,9 @@ private:
 
     using base::cast;
 
+    using base::key_less;
+    using base::key_equal;
+
 public:
     SplayTree() = default;
 
@@ -89,7 +85,6 @@ public:
     using base::erase;
     using base::find;
 
-public:
     std::pair<ConstIterator, bool> insert(key_type&& key) noexcept override
     {
         return insert_impl(std::move(key));
@@ -127,12 +122,7 @@ public:
         splay(upper_bound);
         return ConstIterator{upper_bound, max_};
     }
-
-private:
-    using base::key_less;
-    using base::key_equal;
     
-public:
     size_type number_less_than(const key_type& key) const noexcept
     {
         size_type number = 0;

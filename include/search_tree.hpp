@@ -78,7 +78,6 @@ public:
 //----------------------------------------=| Big five end |=--------------------------------------------
 
 //----------------------------------------=| begin/end start |=-----------------------------------------
-public:
     ConstIterator begin() const {return ConstIterator{min_, max_};}
     ConstIterator end()   const {return ConstIterator{nullptr, max_};}
 
@@ -108,6 +107,21 @@ public:
 //----------------------------------------=| Find end |=------------------------------------------------
 
 //----------------------------------------=| Insert start |=--------------------------------------------
+protected:
+    std::pair<ConstIterator, bool> insert_key(key_type&& key)
+    {
+        auto parent = find_parent(key);
+
+        // if key is alredy in tree
+        if (parent != nullptr && key_equal(parent->key_, key))
+            return std::pair{ConstIterator{parent, max_}, false};
+
+        auto new_node = new node_type(std::move(key));
+        new_node->parent_ = parent;
+        insert_in_place(new_node);
+        return std::pair{ConstIterator{new_node, max_}, true};
+    }
+
 private:
     node_ptr find_parent(const key_type& key) const noexcept
     {
@@ -129,23 +143,7 @@ private:
         }
         return y;
     }
-protected:
-    std::pair<ConstIterator, bool> insert_key(key_type&& key)
-    {
-        auto parent = find_parent(key);
 
-        // if key is alredy in tree
-        if (parent != nullptr && key_equal(parent->key_, key))
-            return std::pair{ConstIterator{parent, max_}, false};
-
-        node_ptr new_node = new node_type{};
-        new_node->create(std::move(key));
-        new_node->parent_ = parent;
-        insert_in_place(new_node);
-        return std::pair{ConstIterator{new_node, max_}, true};
-    }
-
-private:
     std::pair<ConstIterator, bool> insert_impl(key_type&& key)
     {
         return insert_key(std::move(key));
@@ -174,6 +172,14 @@ private:
         insert_fix_min_max(node);
     }
 
+    void insert_fix_min_max(node_ptr node) noexcept
+    {
+        if (key_less(max_->key_, node->key_))
+            max_ = node;
+        if (key_less(node->key_, min_->key_))
+            min_ = node;
+    }
+
 public:
     std::pair<ConstIterator, bool> insert(const key_type& key)
     {
@@ -181,7 +187,7 @@ public:
         return insert(std::move(key_cpy));
     }
 
-    virtual std::pair<ConstIterator, bool> insert(key_type&& key) noexcept
+    virtual std::pair<ConstIterator, bool> insert(key_type&& key)
     {
         return insert_impl(std::move(key));
     }
@@ -196,15 +202,6 @@ public:
     void insert(std::initializer_list<key_type> initlist)
     {
         insert(initlist.begin(), initlist.end());
-    }
-
-private:
-    void insert_fix_min_max(node_ptr node) noexcept
-    {
-        if (key_less(max_->key_, node->key_))
-            max_ = node;
-        if (key_less(node->key_, min_->key_))
-            min_ = node;
     }
 //----------------------------------------=| Insert end |=----------------------------------------------
 
@@ -221,6 +218,15 @@ private:
         if (v != nullptr)
             v->parent_ = u->parent_;
     }
+
+    void delete_fix_min_max(node_ptr node)
+    {
+        if (node == min_)
+            min_ = cast(detail::find_min(root_));
+        if (node == max_)
+            max_ = cast(detail::find_max(root_));
+    }
+    
 protected:
     // delete z from tree with saving all invariants
     node_ptr erase_from_tree(node_ptr z)
@@ -311,15 +317,6 @@ protected:
 
         delete_fix_min_max(z);
         return y;
-    }
-
-private:
-    void delete_fix_min_max(node_ptr node)
-    {
-        if (node == min_)
-            min_ = cast(detail::find_min(root_));
-        if (node == max_)
-            max_ = cast(detail::find_max(root_));
     }
 
 public:

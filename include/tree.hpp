@@ -12,7 +12,7 @@ public:
     using node_ptr       = node_type*;
     using const_node_ptr = const node_type*;
     using key_type       = KeyT;
-    using size_type      = typename std::size_t;
+    using size_type      = std::size_t;
 
 protected:
     mutable node_ptr  root_ = nullptr;
@@ -53,21 +53,22 @@ public:
 
         Tree tmp {std::move(*this)};
 
-        tmp.root_ = other.root_->clone();
+
+        tmp.root_ = new node_type(*other.root_);
         auto tmp_current   = tmp.root_;
         auto other_current = other.root_;
 
         while (other_current != nullptr)
             if (other_current->left_ != nullptr && tmp_current->left_ == nullptr)
             {
-                tmp_current->left_ = other_current->left_->clone();
+                tmp_current->left_ = new node_type(*cast(other_current->left_));
                 tmp_current->left_->parent_ = tmp_current;
                 other_current = cast(other_current->left_);
                 tmp_current   = cast(tmp_current->left_);
             }
             else if (other_current->right_ != nullptr && tmp_current->right_ == nullptr)
             {
-                tmp_current->right_ = other_current->right_->clone();
+                tmp_current->right_ = new node_type(*cast(other_current->right_));
                 tmp_current->right_->parent_ = tmp_current;
                 other_current = cast(other_current->right_);
                 tmp_current   = cast(tmp_current->right_);
