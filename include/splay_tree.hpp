@@ -40,6 +40,7 @@ struct SplayNode final : public Node<KeyT>
     }
 };
 } // namespace detail
+
 template<typename KeyT, class Cmp = std::less<KeyT>>
 class SplayTree final : public SearchTree<KeyT, Cmp, detail::SplayNode<KeyT>>
 {

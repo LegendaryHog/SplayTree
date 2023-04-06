@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <fstream>
+#include <cassert>
 #include "tree.hpp"
 #include "search_tree_iterator.hpp"
 
@@ -145,6 +146,7 @@ private:
 
     void insert_in_place(node_ptr node)
     {
+        assert(node);
         // increment size
         size_++;
         // if tree is empty
@@ -225,6 +227,7 @@ protected:
     // delete z from tree with saving all invariants
     node_ptr erase_from_tree(node_ptr z) noexcept
     {
+        assert(z);
         // decrement size
         size_--;
         // declare two pointer, y - replacment for z in else case
