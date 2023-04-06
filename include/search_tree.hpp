@@ -84,7 +84,7 @@ protected:
     ConstIterator find_key(const key_type& key) const
     {
         node_ptr node = root_;
-        while (node != nullptr)
+        while (node)
             if (key_less(key, node->key_))
                 node = cast(node->left_);
             else if (key_less(node->key_, key))
@@ -107,7 +107,7 @@ protected:
         auto parent = find_parent(key);
 
         // if key is alredy in tree
-        if (parent != nullptr && key_equal(parent->key_, key))
+        if (parent && key_equal(parent->key_, key))
             return std::pair{ConstIterator{parent, max_}, false};
 
         auto new_node = new node_type(std::move(key));
@@ -314,7 +314,7 @@ protected:
     }
 
 public:
-    virtual ConstIterator erase(ConstIterator itr) noexcept
+    virtual ConstIterator erase(ConstIterator itr)
     {
         if (itr == end())
             return end();
@@ -330,7 +330,7 @@ public:
         return erase(find(key));
     }
 
-    ConstIterator erase(ConstIterator first, ConstIterator last) noexcept
+    ConstIterator erase(ConstIterator first, ConstIterator last)
     {
         ConstIterator ret {};
         while (first != last)
@@ -412,9 +412,9 @@ private:
         for (auto itr = cbegin(), end = cend(); itr != end; ++itr)
         {
             node_ptr node = itr.base();
-            if (node->left_ != nullptr)
+            if (node->left_)
                 file << "Node_" << node << ":left:s -> Node_" << node->left_ << ":_node_:n;" << std::endl;
-            if (node->right_ != nullptr)
+            if (node->right_)
                 file << "Node_" << node << ":right:s -> Node_" << node->right_ << ":_node_:n;" << std::endl;
         }
 

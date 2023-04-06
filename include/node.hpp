@@ -39,9 +39,8 @@ template<typename KeyT>
 Node<KeyT>* find_min(Node<KeyT>* root) noexcept
 {
     auto node = root;
-    if (!node)
-        return nullptr;
-    for (node = root; node->left_ != nullptr; node = node->left_) {}
+    if (!node) return nullptr;
+    for (node = root; node->left_; node = node->left_) {}
     return node;
 }
 
@@ -50,8 +49,8 @@ template<typename KeyT>
 Node<KeyT>* find_max(Node<KeyT>* root) noexcept
 {
     auto node = root;
-    if (node)
-        for (node = root; node->right_ != nullptr; node = node->right_) {}
+    if (!node) return nullptr;
+    for (node = root; node->right_; node = node->right_) {}
     return node;
 }
 

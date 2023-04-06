@@ -58,7 +58,7 @@ public:
         auto tmp_current   = tmp.root_;
         auto other_current = other.root_;
 
-        while (other_current != nullptr)
+        while (other_current)
             if (other_current->left_  && !tmp_current->left_)
             {
                 tmp_current->left_ = new node_type(*cast(other_current->left_));

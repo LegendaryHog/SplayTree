@@ -49,7 +49,7 @@ public:
         {
             auto parent = node_->parent_;
 
-            while (parent != nullptr && node_->is_right_son())
+            while (parent && node_->is_right_son())
             {
                 node_ = cast(parent);
                 parent = parent->parent_;
@@ -76,7 +76,7 @@ public:
         {    
             auto parent = node_->parent_;
 
-            while (parent != nullptr && node_->is_left_son())
+            while (parent && node_->is_left_son())
             {
                 node_ = cast(parent);
                 parent = cast(parent->parent_);

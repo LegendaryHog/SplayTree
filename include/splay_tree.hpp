@@ -99,7 +99,7 @@ public:
 
     using base::end;
 
-    ConstIterator erase(ConstIterator itr) noexcept override
+    ConstIterator erase(ConstIterator itr) override
     {
         if (itr == end())
             return end();
