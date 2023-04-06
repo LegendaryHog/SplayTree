@@ -18,8 +18,8 @@ template<typename KeyT, class Cmp, derived_from_node<KeyT> Node>
 class SearchTreeIterator
 {
 public:
-    using iterator_category = typename std::bidirectional_iterator_tag;
-    using difference_type   = typename std::ptrdiff_t;
+    using iterator_category = std::bidirectional_iterator_tag;
+    using difference_type   = std::ptrdiff_t;
     using value_type        = KeyT;
     using const_pointer     = KeyT*;
     using const_reference   = KeyT&;
@@ -28,22 +28,22 @@ public:
 private:
     node_ptr node_, max_;
 
-    static node_ptr cast(detail::Node<KeyT>* node)
+    static node_ptr cast(detail::Node<KeyT>* node) noexcept
     {
         return static_cast<node_ptr>(node);
     }
 public:
-    SearchTreeIterator(node_ptr node = nullptr, node_ptr max = nullptr)
+    SearchTreeIterator(node_ptr node = nullptr, node_ptr max = nullptr) noexcept
     :node_ {node}, max_ {max}
     {}
 
-    const_reference operator*() const {return node_->key_;}
+    const_reference operator*() const noexcept {return node_->key_;}
 
-    const_pointer operator->() const {return &(node_->key_);}
+    const_pointer operator->() const noexcept {return std::addressof(node_->key_);}
 
-    SearchTreeIterator& operator++()
+    SearchTreeIterator& operator++() noexcept
     {
-        if (node_->right_ != nullptr)
+        if (node_->right_)
             node_ = cast(detail::find_min(node_->right_));
         else
         {
@@ -59,18 +59,18 @@ public:
         return *this;
     }
 
-    SearchTreeIterator operator++(int)
+    SearchTreeIterator operator++(int) noexcept
     {
         auto cpy {*this};
         ++(*this);
         return cpy;
     }
 
-    SearchTreeIterator& operator--()
+    SearchTreeIterator& operator--() noexcept
     {
-        if (node_ == nullptr)
+        if (!node_)
             node_ = max_;
-        else if (node_->left_ != nullptr)
+        else if (node_->left_)
             node_ = cast(detail::find_max(node_->left_));
         else
         {    
@@ -86,17 +86,17 @@ public:
         return *this;
     }
 
-    SearchTreeIterator operator--(int)
+    SearchTreeIterator operator--(int) noexcept
     {
         auto cpy {*this};
         --(*this);
         return cpy;
     }
 
-    bool operator==(const SearchTreeIterator& rhs) const {return (node_ == rhs.node_ && max_ == rhs.max_);}
+    bool operator==(const SearchTreeIterator& rhs) const noexcept {return (node_ == rhs.node_ && max_ == rhs.max_);}
 
 protected:
-    node_ptr base() const {return node_;}
+    node_ptr base() const noexcept {return node_;}
     
 public:
     friend class SearchTree<KeyT, Cmp, Node>;

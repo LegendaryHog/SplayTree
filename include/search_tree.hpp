@@ -56,15 +56,9 @@ public:
     {}
 //----------------------------------------=| Ctors end |=-----------------------------------------------
 
-//----------------------------------------=| Size`s funcs start |=--------------------------------------
-    size_type size() const {return size_;}
-
-    bool empty() const {return (size_ == 0);} 
-//----------------------------------------=| Size`s funcs end |=----------------------------------------
-
 //----------------------------------------=| Max/min methods start |=-----------------------------------
-    const key_type& maximum() const {return max_->key_;}
-    const key_type& minimum() const {return min_->key_;}
+    const key_type& maximum() const noexcept {return max_->key_;}
+    const key_type& minimum() const noexcept {return min_->key_;}
 //----------------------------------------=| Max/min methods end |=-------------------------------------
 
 //----------------------------------------=| Big five start |=------------------------------------------
@@ -78,11 +72,11 @@ public:
 //----------------------------------------=| Big five end |=--------------------------------------------
 
 //----------------------------------------=| begin/end start |=-----------------------------------------
-    ConstIterator begin() const {return ConstIterator{min_, max_};}
-    ConstIterator end()   const {return ConstIterator{nullptr, max_};}
+    ConstIterator begin() const noexcept {return ConstIterator{min_, max_};}
+    ConstIterator end()   const noexcept {return ConstIterator{nullptr, max_};}
 
-    ConstIterator cbegin() const {return ConstIterator{min_, max_};}
-    ConstIterator cend()   const {return ConstIterator{nullptr, max_};}
+    ConstIterator cbegin() const noexcept {return ConstIterator{min_, max_};}
+    ConstIterator cend()   const noexcept {return ConstIterator{nullptr, max_};}
 //----------------------------------------=| begin/end end |=-------------------------------------------
 
 //----------------------------------------=| Find start |=----------------------------------------------
@@ -100,7 +94,7 @@ protected:
         return end();
     }
 public:
-    virtual ConstIterator find(const key_type& key) const
+    virtual ConstIterator find(const key_type& key) const 
     {
         return find_key(key);
     }
@@ -123,12 +117,12 @@ protected:
     }
 
 private:
-    node_ptr find_parent(const key_type& key) const noexcept
+    node_ptr find_parent(const key_type& key) const
     {
         node_ptr x = root_;
         node_ptr y = nullptr;
 
-        while (x != nullptr)
+        while (x)
         {
             // save pointer on x before turn
             y = x;
@@ -149,12 +143,12 @@ private:
         return insert_key(std::move(key));
     }
 
-    void insert_in_place(node_ptr node) noexcept
+    void insert_in_place(node_ptr node)
     {
         // increment size
         size_++;
         // if tree is empty
-        if (node->parent_ == nullptr)
+        if (!node->parent_)
         {
             // root is node
             root_ = node;
@@ -172,7 +166,7 @@ private:
         insert_fix_min_max(node);
     }
 
-    void insert_fix_min_max(node_ptr node) noexcept
+    void insert_fix_min_max(node_ptr node)
     {
         if (key_less(max_->key_, node->key_))
             max_ = node;
@@ -215,11 +209,11 @@ public:
             u->parent_->left_ = v;
         else
             u->parent_->right_ = v;
-        if (v != nullptr)
+        if (v)
             v->parent_ = u->parent_;
     }
 
-    void delete_fix_min_max(node_ptr node)
+    void delete_fix_min_max(node_ptr node) noexcept
     {
         if (node == min_)
             min_ = cast(detail::find_min(root_));
@@ -229,7 +223,7 @@ public:
     
 protected:
     // delete z from tree with saving all invariants
-    node_ptr erase_from_tree(node_ptr z)
+    node_ptr erase_from_tree(node_ptr z) noexcept
     {
         // decrement size
         size_--;
@@ -247,7 +241,7 @@ protected:
         |*       /  \                   |
         |* _____________________________|
         \*/
-        if (z->left_ == nullptr)
+        if (!z->left_)
         {
             // save root os subtree that will be replace
             x = cast(z->right_);
@@ -265,7 +259,7 @@ protected:
         |* /  \                         |
         |* _____________________________|
         \*/
-        else if (z->right_ == nullptr)
+        else if (!z->right_)
         {
             x = cast(z->left_);
             transplant(z, cast(z->left_));
@@ -320,7 +314,7 @@ protected:
     }
 
 public:
-    virtual ConstIterator erase(ConstIterator itr)
+    virtual ConstIterator erase(ConstIterator itr) noexcept
     {
         if (itr == end())
             return end();
@@ -336,7 +330,7 @@ public:
         return erase(find(key));
     }
 
-    ConstIterator erase(ConstIterator first, ConstIterator last)
+    ConstIterator erase(ConstIterator first, ConstIterator last) noexcept
     {
         ConstIterator ret {};
         while (first != last)
@@ -350,7 +344,7 @@ protected:
     node_ptr lower_bound_ptr(const key_type& key) const
     {
         node_ptr result = nullptr, current = root_;
-        while (current != nullptr)
+        while (current)
             if (!key_less(current->key_, key))
             {
                 result = current;
@@ -364,7 +358,7 @@ protected:
     node_ptr upper_bound_ptr(const key_type& key) const 
     {
         node_ptr result = nullptr, current = root_;
-        while (current != nullptr)
+        while (current)
             if (key_less(key, current->key_))
             {
                 result = current;
@@ -400,13 +394,15 @@ public:
 private:
     void descriptor_dump(std::fstream& file) const
     {
-        file << "\tTree [fillcolor=purple, label = \"{ SearchTree\\ndescriptor| size: " << size() << "| <root> root:\\n " << root_
-        << "| min key: " << minimum() << "| max key: " << maximum() << "}\"];" << std::endl;
+        file << "\tTree [fillcolor=purple, label = \"{ SearchTree\\ndescriptor| size: " << this->size() << "| <root> root:\\n " << root_;
+        if (!this->empty())
+            file << "| min key: " << minimum() << "| max key: " << maximum();
+        file << "}\"];" << std::endl;
     }
     
     void tree_dump(std::fstream& file) const
     {
-        if (empty())
+        if (this->empty())
             return;
 
         for (auto itr = cbegin(), end = cend(); itr != end; ++itr)
@@ -430,7 +426,7 @@ private:
 public:
     bool equal_to(const SearchTree& other) const
     {
-        if (size() != other.size())
+        if (this->size() != other.size())
             return false;
         
         for (auto itr = cbegin(), other_itr = other.cbegin(), end = cend(); itr != end; ++itr, ++other_itr)

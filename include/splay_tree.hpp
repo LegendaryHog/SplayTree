@@ -23,7 +23,7 @@ struct SplayNode final : public Node<KeyT>
     :base::Node(node.key_), size_ {node.size_}
     {}
 
-    void calc_size()
+    void calc_size() noexcept
     {
         size_ = 1;
         if (this->left_)
@@ -85,7 +85,7 @@ public:
     using base::erase;
     using base::find;
 
-    std::pair<ConstIterator, bool> insert(key_type&& key) noexcept override
+    std::pair<ConstIterator, bool> insert(key_type&& key) override
     {
         return insert_impl(std::move(key));
     }
@@ -99,7 +99,7 @@ public:
 
     using base::end;
 
-    ConstIterator erase(ConstIterator itr) override
+    ConstIterator erase(ConstIterator itr) noexcept override
     {
         if (itr == end())
             return end();
@@ -123,11 +123,11 @@ public:
         return ConstIterator{upper_bound, max_};
     }
     
-    size_type number_less_than(const key_type& key) const noexcept
+    size_type number_less_than(const key_type& key) const
     {
         size_type number = 0;
         node_ptr current = root_, splay_node = current;
-        while (current != nullptr)
+        while (current)
         {
             splay_node = current;
             if (key_less(current->key_, key))
@@ -144,11 +144,11 @@ public:
         return number;
     }
 
-    size_type number_not_greater_than(const key_type& key) const noexcept
+    size_type number_not_greater_than(const key_type& key) const
     {
         size_type number = 0;
         node_ptr current = root_, splay_node = current;
-        while (current != nullptr)
+        while (current)
         {
             splay_node = current;
             if (key_less(current->key_, key) || key_equal(current->key_, key))
@@ -165,7 +165,7 @@ public:
         return number;
     }
 
-    size_type distance(ConstIterator first, ConstIterator last)
+    size_type distance(ConstIterator first, ConstIterator last) const
     {
         size_type dist = 0;
         while(first != last)
@@ -185,7 +185,7 @@ private:
         return ret;
     }
 
-    void splay(node_ptr node) const
+    void splay(node_ptr node) const noexcept
     {
         if (!node)
             return;
@@ -270,7 +270,7 @@ private:
     \*/
     void left_rotate(node_ptr x) const noexcept
     {
-        if (x->right_ == nullptr)
+        if (!x->right_)
             return;
         // declare y as right son of x
         node_ptr y = cast(x->right_);
@@ -279,7 +279,7 @@ private:
 
         // if yl exist (not nullptr)
         // replace parent of yl from y to x
-        if (y->left_ != nullptr)      
+        if (y->left_)      
             y->left_->parent_ = x;
 
         // parent of y will be parent of x
@@ -319,12 +319,12 @@ private:
     \*/
     void right_rotate(node_ptr x) const noexcept
     {
-        if (x->left_ == nullptr)
+        if (!x->left_)
             return;
         node_ptr y = cast(x->left_);
         x->left_ = y->right_;
 
-        if (y->right_ != nullptr)
+        if (y->right_)
             y->right_->parent_ = x;
 
         y->parent_ = x->parent_;

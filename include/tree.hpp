@@ -18,16 +18,16 @@ protected:
     mutable node_ptr  root_ = nullptr;
     size_type size_ = 0;
 
-    static node_ptr cast(detail::Node<KeyT>* node)
+    static node_ptr cast(detail::Node<KeyT>* node) noexcept
     {
         return static_cast<node_ptr>(node);
     }
 public:
     Tree() = default;
 
-    size_type size() const {return size_;}
+    size_type size() const noexcept {return size_;}
 
-    bool empty() const {return (size_ == 0);}
+    bool empty() const noexcept {return (size_ == 0);}
 
 private:
     void swap(Tree& rhs) noexcept
@@ -36,11 +36,11 @@ private:
         std::swap(size_, rhs.size_);
     }
 public:
-    Tree(Tree&& other)
+    Tree(Tree&& other) noexcept 
     {
         swap(other);
     }
-    Tree& operator=(Tree&& rhs)
+    Tree& operator=(Tree&& rhs) noexcept 
     {
         swap(rhs);
         return *this;
@@ -59,14 +59,14 @@ public:
         auto other_current = other.root_;
 
         while (other_current != nullptr)
-            if (other_current->left_ != nullptr && tmp_current->left_ == nullptr)
+            if (other_current->left_  && !tmp_current->left_)
             {
                 tmp_current->left_ = new node_type(*cast(other_current->left_));
                 tmp_current->left_->parent_ = tmp_current;
                 other_current = cast(other_current->left_);
                 tmp_current   = cast(tmp_current->left_);
             }
-            else if (other_current->right_ != nullptr && tmp_current->right_ == nullptr)
+            else if (other_current->right_ && !tmp_current->right_)
             {
                 tmp_current->right_ = new node_type(*cast(other_current->right_));
                 tmp_current->right_->parent_ = tmp_current;
@@ -94,10 +94,10 @@ public:
             return;
 
         auto current = root_;
-        while (current != nullptr)
-            if (current->left_ != nullptr)
+        while (current)
+            if (current->left_)
                 current = static_cast<node_ptr>(current->left_);
-            else if (current->right_ != nullptr)
+            else if (current->right_)
                 current = static_cast<node_ptr>(current->right_);
             else
             {
