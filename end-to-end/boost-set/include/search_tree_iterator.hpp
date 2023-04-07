@@ -25,21 +25,21 @@ private:
     const_node_ptr Null_;
 
 public:
-    SearchTreeIterator(node_ptr node = nullptr, const_node_ptr Null = nullptr)
+    SearchTreeIterator(node_ptr node = nullptr, const_node_ptr Null = nullptr) noexcept
     :node_ {node}, Null_ {Null}
     {}
 
-    const_reference operator*() const
+    const_reference operator*() const noexcept
     {
         return node_->key_;
     }
 
-    const_pointer operator->() const
+    const_pointer operator->() const noexcept
     {
-        return &(node_->key_);
+        return std::addressof(node_->key_);
     }
 
-    SearchTreeIterator& operator++()
+    SearchTreeIterator& operator++() noexcept
     {
         if (node_->right_ != Null_)
             node_ = detail::find_min(node_->right_, Null_);
@@ -57,14 +57,14 @@ public:
         return *this;
     }
 
-    SearchTreeIterator operator++(int)
+    SearchTreeIterator operator++(int) noexcept
     {
         auto cpy {*this};
         ++(*this);
         return cpy;
     }
 
-    SearchTreeIterator& operator--()
+    SearchTreeIterator& operator--() noexcept
     {
         if (node_ == Null_)
             node_ = Null_->right_;
@@ -84,20 +84,20 @@ public:
         return *this;
     }
 
-    SearchTreeIterator operator--(int)
+    SearchTreeIterator operator--(int) noexcept
     {
         auto cpy {*this};
         --(*this);
         return cpy;
     }
 
-    bool operator==(const SearchTreeIterator& rhs) const
+    bool operator==(const SearchTreeIterator& rhs) const noexcept
     {
         return node_ == rhs.node_;
     }
 
 protected:
-    node_ptr base() const {return node_;}
+    node_ptr base() const noexcept {return node_;}
     
 public:
     friend class RBSearchTree<KeyT, Cmp, Node>;

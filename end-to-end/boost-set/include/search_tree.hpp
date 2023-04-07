@@ -260,7 +260,7 @@ protected:
 //----------------------------------------=| begin/end end |=-------------------------------------------
 
 //----------------------------------------=| Find start |=----------------------------------------------
-    ConstIterator find(const key_type& key)
+    ConstIterator find(const key_type& key) const
     {
         node_ptr node = root_;
         while (node != Null_)
@@ -596,7 +596,7 @@ private:
     }
 
 private:
-    void delete_fix_min_max(node_ptr node)
+    void delete_fix_min_max(node_ptr node) noexcept
     {
         if (node == Null_->left_)
             Null_->left_ = detail::find_min(root_, Null_);
