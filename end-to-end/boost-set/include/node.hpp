@@ -59,11 +59,11 @@ struct RBNode
         << "| {<left>left:\\n " << left_ << "| <right>right:\\n " << right_ << "}}\"];" << std::endl;
     }
 
-    void action_after_left_rotate(node_ptr Null) {}
+    void action_after_left_rotate(node_ptr Null) noexcept {}
 
-    void action_after_right_rotate(node_ptr Null) {}
+    void action_after_right_rotate(node_ptr Null) noexcept {}
 
-    void action_before_insert(node_ptr Null) {}
+    void action_before_insert(node_ptr Null) noexcept {}
 };
 
 // for sorted search tree

@@ -1,6 +1,6 @@
 #pragma once
 #include "boost_node.hpp"
-#include "rbsearch_tree.hpp"
+#include "search_tree.hpp"
 
 namespace Container
 {
@@ -57,7 +57,6 @@ public:
     }
 private:
     using base::key_less;
-    using base::key_equal;
 
 public:
     const key_type& operator[](size_type index) const noexcept
@@ -65,7 +64,7 @@ public:
         return kth_smallest(index);
     }
 
-    size_type number_less_than(const key_type& key) const noexcept
+    size_type number_less_than(const key_type& key) const
     {
         size_type number = 0;
         node_ptr current = root_;
@@ -80,12 +79,12 @@ public:
         return number;
     }
 
-    size_type number_not_greater_than(const key_type& key) const noexcept
+    size_type number_not_greater_than(const key_type& key) const
     {
         size_type number = 0;
         node_ptr current = root_;
         while (current != Null_)
-            if (key_less(current->key_, key) || key_equal(current->key_, key))
+            if (!key_less(key, current->key_))
             {
                 number += current->left_->size_ + 1;
                 current = current->right_;

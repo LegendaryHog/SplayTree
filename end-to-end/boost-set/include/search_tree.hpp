@@ -2,8 +2,8 @@
 #include <functional>
 #include <fstream>
 #include <string>
-#include "rbnode.hpp"
-#include "rbsearch_tree_iterator.hpp"
+#include "node.hpp"
+#include "search_tree_iterator.hpp"
 
 namespace Container
 {
@@ -19,7 +19,7 @@ protected:
     using const_node_ptr = const Node*;
     using key_type       = KeyT;
     using size_type      = typename std::size_t;
-    using ConstIterator = RBSearchTreeIterator<key_type, Cmp, node_type>;
+    using ConstIterator = SearchTreeIterator<key_type, Cmp, node_type>;
     using Iterator = ConstIterator;
 
 private:
@@ -62,14 +62,14 @@ protected:
 //----------------------------------------=| Ctors end |=-----------------------------------------------
 
 //----------------------------------------=| Size`s funcs start |=--------------------------------------
-    size_type size() const {return size_;}
+    size_type size() const noexcept {return size_;}
 
-    bool empty() const {return (size_ == 0);} 
+    bool empty() const noexcept {return (size_ == 0);} 
 //----------------------------------------=| Size`s funcs end |=----------------------------------------
 
 //----------------------------------------=| Max/min methods start |=-----------------------------------
-    const key_type& maximum() const {return Null_->right_->key_;}
-    const key_type& minimum() const {return Null_->left_->key_;}
+    const key_type& maximum() const noexcept {return Null_->right_->key_;}
+    const key_type& minimum() const noexcept {return Null_->left_->key_;}
 //----------------------------------------=| Max/min methods end |=-------------------------------------
 
 //----------------------------------------=| Big five start |=------------------------------------------
@@ -82,11 +82,11 @@ private:
     }
 
 protected:
-    RBSearchTree(RBSearchTree&& other)
+    RBSearchTree(RBSearchTree&& other) noexcept
     {
         swap(other);
     }
-    RBSearchTree& operator=(RBSearchTree&& rhs)
+    RBSearchTree& operator=(RBSearchTree&& rhs) noexcept
     {
         swap(rhs);
         return *this;
@@ -252,11 +252,11 @@ private:
 
 //----------------------------------------=| begin/end start |=-----------------------------------------
 protected:
-    ConstIterator begin() const {return ConstIterator{Null_->left_, Null_};}
-    ConstIterator end()   const {return ConstIterator{Null_, Null_};}
+    ConstIterator begin() const noexcept {return ConstIterator{Null_->left_, Null_};}
+    ConstIterator end()   const noexcept {return ConstIterator{Null_, Null_};}
 
-    ConstIterator cbegin() const {return ConstIterator{Null_->left_, Null_};}
-    ConstIterator cend()   const {return ConstIterator{Null_, Null_};}
+    ConstIterator cbegin() const noexcept {return ConstIterator{Null_->left_, Null_};}
+    ConstIterator cend()   const noexcept {return ConstIterator{Null_, Null_};}
 //----------------------------------------=| begin/end end |=-------------------------------------------
 
 //----------------------------------------=| Find start |=----------------------------------------------
@@ -276,7 +276,7 @@ protected:
 
 //----------------------------------------=| Insert start |=--------------------------------------------
 private:
-    node_ptr find_parent(const key_type& key) const noexcept
+    node_ptr find_parent(const key_type& key) const
     {
         auto x = root_;
         auto y = Null_;
@@ -297,7 +297,7 @@ private:
         return y;
     }
 
-    void insert_by_ptr(node_ptr node) noexcept
+    void insert_by_ptr(node_ptr node)
     {
         // increment size
         size_++;
@@ -330,7 +330,7 @@ protected:
         return insert(std::move(key_cpy));
     }
 
-    std::pair<ConstIterator, bool> insert(key_type&& key) noexcept
+    std::pair<ConstIterator, bool> insert(key_type&& key)
     {
         auto parent = find_parent(key);
 
@@ -357,7 +357,7 @@ protected:
     }
 
 private:
-    void insert_fix_min_max(node_ptr node) noexcept
+    void insert_fix_min_max(node_ptr node)
     {
         if (key_less(Null_->right_->key_, node->key_))
             Null_->right_ = node;
@@ -365,7 +365,7 @@ private:
             Null_->left_ = node;
     }
 
-    void rb_insert_fix(node_ptr node) noexcept
+    void rb_insert_fix(node_ptr node)
     {
         // fix min and max pointers
         insert_fix_min_max(node);
@@ -495,7 +495,7 @@ private:
     }
 
     // delete z from tree with saving all invariants
-    void erase_from_tree(node_ptr z)
+    void erase_from_tree(node_ptr z) noexcept
     {
         // decrement size
         size_--;

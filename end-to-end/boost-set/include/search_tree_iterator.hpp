@@ -10,7 +10,7 @@ template<typename KeyT, class Cmp, typename Node>
 class RBSearchTree;
 
 template<typename KeyT, class Cmp,  typename Node>
-class RBSearchTreeIterator
+class SearchTreeIterator
 {
 public:
     using iterator_category = typename std::bidirectional_iterator_tag;
@@ -25,7 +25,7 @@ private:
     const_node_ptr Null_;
 
 public:
-    RBSearchTreeIterator(node_ptr node = nullptr, const_node_ptr Null = nullptr)
+    SearchTreeIterator(node_ptr node = nullptr, const_node_ptr Null = nullptr)
     :node_ {node}, Null_ {Null}
     {}
 
@@ -39,7 +39,7 @@ public:
         return &(node_->key_);
     }
 
-    RBSearchTreeIterator& operator++()
+    SearchTreeIterator& operator++()
     {
         if (node_->right_ != Null_)
             node_ = detail::find_min(node_->right_, Null_);
@@ -57,14 +57,14 @@ public:
         return *this;
     }
 
-    RBSearchTreeIterator operator++(int)
+    SearchTreeIterator operator++(int)
     {
         auto cpy {*this};
         ++(*this);
         return cpy;
     }
 
-    RBSearchTreeIterator& operator--()
+    SearchTreeIterator& operator--()
     {
         if (node_ == Null_)
             node_ = Null_->right_;
@@ -84,14 +84,14 @@ public:
         return *this;
     }
 
-    RBSearchTreeIterator operator--(int)
+    SearchTreeIterator operator--(int)
     {
         auto cpy {*this};
         --(*this);
         return cpy;
     }
 
-    bool operator==(const RBSearchTreeIterator& rhs) const
+    bool operator==(const SearchTreeIterator& rhs) const
     {
         return node_ == rhs.node_;
     }

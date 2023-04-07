@@ -212,7 +212,7 @@ TEST(SplayTree, erase)
 
 TEST(SplayTree, number_less_than)
 {
-    SplayTree<int> set = {0, 1, 2, 3, 7, 9, 11, 15, 20, 21, 56, 70};
+    SplayTree<int> set = {2, 15, 20, 21, 70, 0, 1, 3, 7, 9, 11, 56};
     EXPECT_EQ(set.number_less_than(0), 0);
     EXPECT_EQ(set.number_less_than(-1), 0);
     EXPECT_EQ(set.number_less_than(1), 1);

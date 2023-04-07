@@ -69,24 +69,24 @@ public:
     }
 
 private:
-    void recalc_size()
+    void recalc_size() noexcept
     {
         size_ = left_->size_ + right_->size_ + 1;
     }
 public:
-    void action_after_left_rotate(node_ptr Null)
+    void action_after_left_rotate(node_ptr Null) noexcept
     {
         left_->recalc_size();
         recalc_size();
     }
 
-    void action_after_right_rotate(node_ptr Null) 
+    void action_after_right_rotate(node_ptr Null) noexcept
     {
         right_->recalc_size();
         recalc_size();
     }
 
-    void action_before_insert(node_ptr Null)
+    void action_before_insert(node_ptr Null) noexcept
     {
         for (auto node = this; node != Null; node = node->parent_)
             node->size_++;
